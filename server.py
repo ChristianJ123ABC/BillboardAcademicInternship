@@ -2,6 +2,11 @@
 #Psycog setup
 #https://www.psycopg.org/docs/install.html
 
+#regex for email validation
+#https://www.zerobounce.net/email-guides/python-email-verification
+
+#Register / Login
+#https://www.geeksforgeeks.org/python/login-and-registration-project-using-flask-and-mysql/
 
 #START: CODE COMPLETED BY CHRISTIAN
 from flask import Flask, render_template, redirect, url_for, request, session, flash #pip install flask
@@ -42,3 +47,23 @@ mysql = MySQL(app)
 #Extensions used when uploading files
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static/uploads')
+
+#Validation Functions
+#Format: email@domain.com / name.last@domain.co.uk
+def validEmail(email):
+    return re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email)
+
+def existingEmail(email):
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
+    user = cursor.fetchone()
+    cursor.close()
+    return user
+
+@app.route("/")
+def home():
+    return redirect(url_for("register"))
+
+
+#Register Function
+@app.route("/register", methods=["GET", "POST"])
