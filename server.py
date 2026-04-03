@@ -14,6 +14,8 @@
 #Connection to database
 #https://www.geeksforgeeks.org/python/flask-app-configuation/app.
 
+
+
 #START: CODE COMPLETED BY CHRISTIAN
 from flask import Flask, render_template, redirect, url_for, request, session, flash #pip install flask
 from flask_mysqldb import MySQL #pip install flask_mysqldb  (PYTHON 3.11)
@@ -31,24 +33,28 @@ import qrcode #Generate QR code
 from io import BytesIO
 import string, random
 from dotenv import load_dotenv #pip install python-dotenv #used to load from .env file for security reasons (NEW THING I LEARNED)
+load_dotenv(override=True)
 
+#Fix for .env errors with railway: break down the public url into the root, host, password, etc and use that.
 
 #pip install cryptography
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC 
 from cryptography.hazmat.primitives import hashes
 from cryptography.fernet import Fernet
 
-
+#START: Code created by Christian
 #Used to access the Database 
 app = Flask(__name__, template_folder='templates')
 app.config['MYSQL_HOST'] = os.getenv('MYSQL_HOST')
 app.config['MYSQL_USER'] = os.getenv('MYSQL_USER')
 app.config['MYSQL_PASSWORD'] = os.getenv('MYSQL_PASSWORD')
 app.config['MYSQL_DB'] = os.getenv('MYSQL_DB')
-app.config['MYSQL_PORT'] = int(os.getenv('MYSQL_PORT', 3306))
+app.config['MYSQL_PORT'] = int(os.getenv('MYSQL_PORT'))
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
-app.secret_key = os.getenv("SECRET_KEY").encode() #generates random secret key for each user session
+app.secret_key = os.getenv("SECRET_KEY") 
 mysql = MySQL(app)
+
+
 
 #Extensions used when uploading files
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
@@ -75,7 +81,7 @@ def home():
 
 #Register
 @app.route("/register", methods=["GET","POST"])
-def registerAccount():
+def register():
 
     #Message if user tries to create account whilst logged in
     if "user_id" in session:
@@ -126,12 +132,12 @@ def registerAccount():
             return render_template("register.html", businessName = businessName, firstName = firstName, lastName = lastName, email = email) 
         
         else:
-            cursor = mysql.connection.cursor
+            cursor = mysql.connection.cursor()
             cursor.execute("INSERT into users (email, hashed_password, firstName, lastName, businessName) VALUES (%s, %s, %s, %s, %s)", (email, hashedPass, firstName, lastName, businessName))
             mysql.connection.commit()
 
             flash(("Account Created Successfully!"), "success")
-            return render_template("register.html")
+            return render_template("login.html")
         
 
 
@@ -175,7 +181,7 @@ def login():
         
         #If all login details are valid:
         else:
-            session["user_id"] = user["id"]
+            session["user_id"] = user["userID"]
             session["firstName"] = user["firstName"]
             session["lastName"] = user["lastName"]
             session["businessName"]  = user["businessName"]
@@ -204,3 +210,6 @@ def logout():
 #makes it so that it only runs the app when executed
 if __name__ == "__main__":
     app.run(debug=True) #shows bugs / errors on CMD
+
+
+#END: Code created by Christian
