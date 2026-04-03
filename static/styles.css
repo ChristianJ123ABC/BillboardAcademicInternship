@@ -1,0 +1,20 @@
+/*START: styling done by Christian
+
+
+/*Styling for Flash messages
+*/
+.success { color: #28a745;  } 
+.error { color: #dc3545;  }
+.warning { color: #ffc107;  } 
+
+.flash{
+    padding: 10px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 20px;
+    width: 100%;
+    display: block;  
+    margin: 20px auto;
+}
+
+/*END: styling done by Christian
