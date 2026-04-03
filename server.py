@@ -29,7 +29,7 @@ import pyotp #pip install pyotp
 import qrcode #pip install qrcode
 from io import BytesIO
 import pyotp #One-time password library
-import qrcode #Generate QR code
+import qrcode #Generate QR code for 2fa
 from io import BytesIO
 import string, random
 from dotenv import load_dotenv #pip install python-dotenv #used to load from .env file for security reasons (NEW THING I LEARNED)
@@ -44,6 +44,8 @@ from cryptography.fernet import Fernet
 
 #START: Code created by Christian
 #Used to access the Database 
+
+#Grabs information from .env file to access the database.
 app = Flask(__name__, template_folder='templates')
 app.config['MYSQL_HOST'] = os.getenv('MYSQL_HOST')
 app.config['MYSQL_USER'] = os.getenv('MYSQL_USER')
