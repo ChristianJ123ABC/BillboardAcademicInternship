@@ -60,7 +60,7 @@ mysql = MySQL(app)
 
 
 #Extensions used when uploading files
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'mp4', 'mov', 'avi', 'mkv', 'webm'}
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'mp4', 'mov', 'mkv',}
 app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static/uploads')
 
 #Validation Functions
@@ -188,7 +188,7 @@ def login():
         
         #If all login details are valid:
         else:
-            session["user_id"] = user["userID"]
+            session["user_id"] = user["id"]
             session["firstName"] = user["firstName"]
             session["lastName"] = user["lastName"]
             session["businessName"]  = user["businessName"]
@@ -207,7 +207,13 @@ def dashboard():
         return redirect(url_for("login"))
     
     else:
-        return render_template("dashboard.html")
+        
+        user_id = session["user_id"]
+        cursor = mysql.connection.cursor()
+        cursor.execute("SELECT advert_id, file, caption FROM advertisements WHERE user_id = %s", (user_id,))
+        advertisements = cursor.fetchall()
+        
+        return render_template("dashboard.html", advertisements = advertisements)
     
 
 
@@ -220,22 +226,39 @@ def uploadAdvertisement():
     #    cursor = mysql.connection.cursor()
      #   user_id = session["user_id"]
     
+    if request.method == "GET":
+        return render_template("uploadAdvertisement.html")
+
     #Validation for files
-    if request.method == "POST":
-        file = request.files['image']
-        filepath = os.path.join(app.config['UPLOAD_FOLDER']), image.filename)
-        
-        #No file selected
-        if not file or file.filename == '':
-            flash("No file selected", "error")
-            return redirect(url_for("uploadAdvertisment"))
-        
-        if not allowedFile(file.filename):
-            flash("Invalid image type, use the following image extensions: 'png', 'jpg', 'jpeg', 'mp4', 'mov', 'avi', 'mkv', 'webm' ", "error")
-            return redirect(url_for("uploadAdvertisement"))
-        
-        file.save(filepath)
-        uploadFilePath = os.path.join('uploads', file.filename)
+    else:
+        if request.method == "POST":
+            user_id = session["user_id"]
+            file = request.files['file']
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+            
+            #No file selected
+            if not file or file.filename == '':
+                flash("No file selected", "error")
+                return redirect(url_for("uploadAdvertisement"))
+            
+            if not allowedFile(file.filename):
+                flash("Invalid image type, use the following image extensions: 'png', 'jpg', 'jpeg', 'mp4', 'mov', 'mkv' ", "error")
+                return redirect(url_for("uploadAdvertisement"))
+            
+            #Create filepath to store in database
+            file.save(filepath)
+            uploadFilePath = os.path.join('uploads', file.filename)
+
+            #Insert image into database
+            cursor = mysql.connection.cursor()
+            caption = request.form.get('caption')
+            cursor.execute("INSERT INTO advertisements (file, caption, user_id) VALUES (%s, %s,%s)", (uploadFilePath, caption, user_id))
+            mysql.connection.commit()
+            cursor.close()
+            
+            flash("Image uploaded successfully", 'success')
+            return redirect(url_for('uploadAdvertisement'))
+    
 
         
         
