@@ -14,6 +14,11 @@
 #Connection to database
 #https://www.geeksforgeeks.org/python/flask-app-configuation/app.
 
+#Uploading / deleting files
+#https://flask.palletsprojects.com/en/stable/patterns/fileuploads/
+#https://www.youtube.com/watch?v=2De9Lu9tReg
+#https://www.youtube.com/watch?v=YLptAhf3wwM&t=963s
+
 
 
 #START: CODE COMPLETED BY CHRISTIAN
@@ -25,11 +30,7 @@ from flask import request, jsonify
 import os, base64
 from datetime import timedelta, datetime
 import re
-import pyotp #pip install pyotp
-import qrcode #pip install qrcode
 from io import BytesIO
-import pyotp #One-time password library
-import qrcode #Generate QR code for 2fa
 from io import BytesIO
 import string, random
 from dotenv import load_dotenv #pip install python-dotenv #used to load from .env file for security reasons (NEW THING I LEARNED)
@@ -59,7 +60,7 @@ mysql = MySQL(app)
 
 
 #Extensions used when uploading files
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'mp4', 'mov', 'mkv',}
 app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static/uploads')
 
 #Validation Functions
@@ -73,6 +74,10 @@ def existingEmail(email):
     user = cursor.fetchone()
     cursor.close()
     return user
+
+
+def allowedFile(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 #Default page when you open the website and not logged in
@@ -183,7 +188,7 @@ def login():
         
         #If all login details are valid:
         else:
-            session["user_id"] = user["userID"]
+            session["user_id"] = user["id"]
             session["firstName"] = user["firstName"]
             session["lastName"] = user["lastName"]
             session["businessName"]  = user["businessName"]
@@ -192,6 +197,8 @@ def login():
             flash("Login Successful!", "success")
             return redirect(url_for("dashboard"))
 
+
+#Dashboard for users
 @app.route("/dashboard")
 def dashboard():
     #Checks if user is logged in
@@ -200,7 +207,61 @@ def dashboard():
         return redirect(url_for("login"))
     
     else:
-        return render_template("dashboard.html")
+        
+        user_id = session["user_id"]
+        cursor = mysql.connection.cursor()
+        cursor.execute("SELECT advert_id, file, caption FROM advertisements WHERE user_id = %s", (user_id,))
+        advertisements = cursor.fetchall()
+        
+        return render_template("dashboard.html", advertisements = advertisements)
+    
+
+
+#Page for users to display their advertisments
+@app.route("/uploadAdvertisement", methods = ["GET", "POST"])
+def uploadAdvertisement():
+
+    #Reminder: add in a check to see if they are subscribed to upload advertisements once upload works
+   # if request.method == "GET":
+    #    cursor = mysql.connection.cursor()
+     #   user_id = session["user_id"]
+    
+    if request.method == "GET":
+        return render_template("uploadAdvertisement.html")
+
+    #Validation for files
+    else:
+        if request.method == "POST":
+            user_id = session["user_id"]
+            file = request.files['file']
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+            
+            #No file selected
+            if not file or file.filename == '':
+                flash("No file selected", "error")
+                return redirect(url_for("uploadAdvertisement"))
+            
+            if not allowedFile(file.filename):
+                flash("Invalid image type, use the following image extensions: 'png', 'jpg', 'jpeg', 'mp4', 'mov', 'mkv' ", "error")
+                return redirect(url_for("uploadAdvertisement"))
+            
+            #Create filepath to store in database
+            file.save(filepath)
+            uploadFilePath = os.path.join('uploads', file.filename)
+
+            #Insert image into database
+            cursor = mysql.connection.cursor()
+            caption = request.form.get('caption')
+            cursor.execute("INSERT INTO advertisements (file, caption, user_id) VALUES (%s, %s,%s)", (uploadFilePath, caption, user_id))
+            mysql.connection.commit()
+            cursor.close()
+            
+            flash("Image uploaded successfully", 'success')
+            return redirect(url_for('uploadAdvertisement'))
+    
+
+        
+        
 
 
 @app.route('/logout')
