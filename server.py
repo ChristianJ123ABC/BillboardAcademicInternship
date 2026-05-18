@@ -259,6 +259,26 @@ def uploadAdvertisement():
             flash("Image uploaded successfully", 'success')
             return redirect(url_for('uploadAdvertisement'))
     
+#Used to remove a user's advertisement if they so please
+@app.route('/deleteFile/<int:id>')
+def deleteFile(id):
+    root = os.path.dirname(os.path.abspath(__file__))
+        
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT file FROM advertisements WHERE advert_id = %s", (id,))
+    adFile = cursor.fetchone()
+    fileName = adFile['file'] 
+    
+
+    filePath = os.path.join(root,'static', fileName)
+    os.remove(filePath)
+
+    cursor.execute("DELETE FROM advertisements WHERE advert_id = %s", (id,))
+    mysql.connection.commit()
+    cursor.close()
+    flash('File successfully deleted!', 'success')
+
+    return redirect(url_for("dashboard"))
 
         
         
