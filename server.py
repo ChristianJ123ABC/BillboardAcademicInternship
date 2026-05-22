@@ -281,8 +281,6 @@ def deleteFile(id):
     return redirect(url_for("dashboard"))
 
         
-<<<<<<< Updated upstream
-=======
     cursor = mysql.connection.cursor()
     cursor.execute("SELECT file FROM advertisements WHERE advert_id = %s", (id,))
     adFile = cursor.fetchone()
@@ -313,7 +311,6 @@ def scheduling():
 def analytics():
 
     return render_template("analytics.html")        
->>>>>>> Stashed changes
         
 
 
