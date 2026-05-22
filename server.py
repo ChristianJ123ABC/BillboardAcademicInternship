@@ -285,7 +285,7 @@ def deleteFile(id):
 @app.route("/scheduling")
 def scheduling():
 
-    return render_template(url_for('scheduling'))
+    return render_template("sheduling.html)
 
 
 # ANALYTICS ROUTE
@@ -293,8 +293,9 @@ def scheduling():
 @app.route("/analytics")
 def analytics():
 
-    return render_template(url_for('analytics'))        
-        
+    return render_template("analytics.html)        
+       
+
 
 
 @app.route('/logout')
