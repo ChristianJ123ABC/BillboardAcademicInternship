@@ -21,7 +21,7 @@
 
 
 #FUTURE NOTES: DOCKER ISSUES
-#Command to fix flask_mysqldb issues with docker:
+#Command to fix flask_mysqldb issues with docker: ADD INTO dockerfile UNDER WORKDIR /app
 #RUN apt-get update && apt-get install -y --no-install-recommends \
     #build-essential \
     #default-libmysqlclient-dev \
@@ -30,7 +30,7 @@
 
 #app.run(debug=True, host = "0.0.0.0", port=5000) #shows bugs / errors on CMD + runs on all addresses
 
-#Compose.yaml:
+#Compose.yaml: ADD INTO UNDER CONTEXT
 #ports:
   #    - 5000:5000
   # env_file:
