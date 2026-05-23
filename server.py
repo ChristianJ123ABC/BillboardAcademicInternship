@@ -36,6 +36,13 @@
   # env_file:
   #   - .env
 
+#Steps to run the server with docker:
+#1. Install docker desktop
+#2 clone the github and go into terminal and cd "location of repo"
+#3 create a .env with the railway credentials
+#4 run "docker compose up --build" in the terminal in VSC
+#5 server will run
+
 #START: CODE COMPLETED BY CHRISTIAN
 from flask import Flask, render_template, redirect, url_for, request, session, flash #pip install flask
 from flask_mysqldb import MySQL #pip install flask_mysqldb  (PYTHON 3.11)
