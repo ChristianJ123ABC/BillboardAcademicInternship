@@ -24,7 +24,7 @@
 #START: CODE COMPLETED BY CHRISTIAN
 from flask import Flask, render_template, redirect, url_for, request, session, flash #pip install flask
 from flask_mysqldb import MySQL #pip install flask_mysqldb  (PYTHON 3.11)
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash #pip install werkzeug
 from flask import Flask, redirect, request, render_template
 from flask import request, jsonify
 import os, base64
