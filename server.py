@@ -320,7 +320,7 @@ def subscription():
 @app.route("/scheduling")
 def scheduling():
 
-    return render_template("sheduling.html")
+    return render_template("scheduling.html")
 
 
 # ANALYTICS ROUTE
