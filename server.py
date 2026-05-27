@@ -20,6 +20,28 @@
 #https://www.youtube.com/watch?v=YLptAhf3wwM&t=963s
 
 
+#FUTURE NOTES: DOCKER ISSUES
+#Command to fix flask_mysqldb issues with docker: ADD INTO dockerfile UNDER WORKDIR /app
+#RUN apt-get update && apt-get install -y --no-install-recommends \
+    #build-essential \
+    #default-libmysqlclient-dev \
+    #pkg-config \
+    #&& rm -rf /var/lib/apt/lists/*
+
+#app.run(debug=True, host = "0.0.0.0", port=5000) #shows bugs / errors on CMD + runs on all addresses
+
+#Compose.yaml: ADD INTO UNDER CONTEXT
+#ports:
+  #    - 5000:5000
+  # env_file:
+  #   - .env
+
+#Steps to run the server with docker:
+#1. Install docker desktop
+#2 clone the github and go into terminal and cd "location of repo"
+#3 create a .env with the railway credentials
+#4 run "docker compose up --build" in the terminal in VSC
+#5 server will run
 
 #START: CODE COMPLETED BY CHRISTIAN
 from flask import Flask, render_template, redirect, url_for, request, session, flash #pip install flask
@@ -317,7 +339,7 @@ def logout():
 
 #makes it so that it only runs the app when executed
 if __name__ == "__main__":
-    app.run(debug=True) #shows bugs / errors on CMD
+    app.run(debug=True, host = "0.0.0.0", port=5000) #shows bugs / errors on CMD + runs on all addresses
 
 
 #END: Code created by Christian
