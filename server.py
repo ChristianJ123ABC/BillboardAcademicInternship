@@ -280,12 +280,25 @@ def deleteFile(id):
 
     return redirect(url_for("dashboard"))
 
+
+
+# SUBSCRIPTION
+
+@app.route("/subscription")
+def subscription():
+
+    return render_template("subscription.html")
+
+
+
+
+
 # SCHEDULING ROUTE
 
 @app.route("/scheduling")
 def scheduling():
 
-    return render_template("sheduling.html)
+    return render_template("sheduling.html")
 
 
 # ANALYTICS ROUTE
@@ -293,10 +306,8 @@ def scheduling():
 @app.route("/analytics")
 def analytics():
 
-    return render_template("analytics.html)        
+    return render_template("analytics.html")        
        
-
-
 
 @app.route('/logout')
 def logout():
