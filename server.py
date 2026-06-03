@@ -19,6 +19,12 @@
 #https://www.youtube.com/watch?v=2De9Lu9tReg
 #https://www.youtube.com/watch?v=YLptAhf3wwM&t=963s
 
+#Two Factor Authentication
+#https://cryptography.io/en/latest/fernet/
+#https://www.geeksforgeeks.org/python/fernet-symmetric-encryption-using-cryptography-module-in-python/
+#https://www.freecodecamp.org/news/how-to-implement-two-factor-authentication-in-your-flask-app/
+#https://pyauth.github.io/pyotp/
+#https://github.com/pyauth/pyotp
 
 #FUTURE NOTES: DOCKER ISSUES
 #Command to fix flask_mysqldb issues with docker: ADD INTO dockerfile UNDER WORKDIR /app
@@ -65,6 +71,10 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives import hashes
 from cryptography.fernet import Fernet
 
+#pip install pyotp
+#pip install pillow
+import pyotp, qrcode
+
 #START: Code created by Christian
 #Used to access the Database 
 
@@ -79,7 +89,16 @@ app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 app.secret_key = os.getenv("SECRET_KEY") 
 mysql = MySQL(app)
 
+#Used to create 2FA secret key
+f = Fernet(os.getenv("TOTP_ENCRYPTION_KEY").encode())
 
+
+#Encryption + Decryption Functions
+def encrypt2FA(plaintext):
+    return f.encrypt(plaintext.encode()).decode()
+
+def decrypt2FA(ciphertext):
+    return f.decrypt(ciphertext.encode()).decode()
 
 #Extensions used when uploading files
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'mp4', 'mov', 'mkv',}
@@ -162,7 +181,7 @@ def register():
         
         else:
             cursor = mysql.connection.cursor()
-            cursor.execute("INSERT into users (email, hashed_password, firstName, lastName, businessName) VALUES (%s, %s, %s, %s, %s)", (email, hashedPass, firstName, lastName, businessName))
+            cursor.execute("INSERT into users (email, hashed_password, firstName, lastName, businessName, 2fa_enabled) VALUES (%s, %s, %s, %s, %s,%s)", (email, hashedPass, firstName, lastName, businessName, 0)) #The 0 is used to set the 2FA to disabled on a new account
             mysql.connection.commit()
 
             flash(("Account Created Successfully!"), "success")
@@ -210,6 +229,16 @@ def login():
         
         #If all login details are valid:
         else:
+            #Creates temporary details to use for verifying the 2FA Code (prevent them from fully logging in without 2FA)
+            if(user["2fa_enabled"] == True):
+                session["pending_user_id"] = user["id"]
+                session["pending_firstName"] = user["firstName"]
+                session["pending_lastName"] = user["lastName"]
+                session["pending_businessName"] = user["businessName"]
+                session["pending_email"] = user["email"]
+                return redirect(url_for("login_2fa"))
+            
+            #Logs the user in if they don't have 2FA
             session["user_id"] = user["id"]
             session["firstName"] = user["firstName"]
             session["lastName"] = user["lastName"]
@@ -218,7 +247,126 @@ def login():
             
             flash("Login Successful!", "success")
             return redirect(url_for("dashboard"))
+        
+#2FA Section (Login, Verification/Setup, Enable/Disable)
+@app.route("/login/2fa", methods = ["GET", "POST"])
+def login_2fa():
 
+    #Checks for user if they tried to login with 2FA
+    if "pending_user_id" not in session:
+        return redirect(url_for("login"))
+    
+    if request.method == "POST":
+        cursor = mysql.connection.cursor()
+        cursor.execute("SELECT * FROM users where id = %s", (session["pending_user_id"],))
+        user = cursor.fetchone()
+        cursor.close()
+
+        #Decrypts the user's 2FA secret code and compares it to the authenticators code to see if it matches
+        secret = decrypt2FA(user["2fa_secret"])
+        if pyotp.TOTP(secret).verify(request.form["code"]):
+            session.pop("pending_user_id")
+            session["user_id"] = user["id"]
+            session["firstName"] = session.pop("pending_firstName")
+            session["lastName"] = session.pop("pending_lastName")
+            session["businessName"] = session.pop("pending_businessName")
+            session["email"] = session.pop("pending_email")
+            flash("Login Successful!", "success")
+            return redirect(url_for("dashboard"))
+        
+        else:
+            flash("Invalid code.", "error")
+
+    return render_template("2fa_login.html")
+
+@app.route("/setup2FA")
+def setup2FA():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT * FROM users WHERE id = %s", (session["user_id"],))
+    user = cursor.fetchone()
+    cursor.close()
+
+    #Checks if the user already has 2FA enabled
+    if user["2fa_enabled"] != 0:
+        flash("2FA is already enabled", "error")
+        return redirect(url_for("dashboard"))
+        
+    #Creates the user's 2FA secret code and stores it in their database to use for verification later on.
+    secret = pyotp.random_base32()
+
+    cursor = mysql.connection.cursor()
+    cursor.execute("UPDATE users SET 2fa_secret = %s WHERE id = %s",
+                   (encrypt2FA(secret), session["user_id"]))
+    mysql.connection.commit()
+    cursor.close()
+
+    #Uses their secret code to generate a QR Code to scan onto their phone and use a code to login to their account
+    uri = pyotp.totp.TOTP(secret).provisioning_uri(
+        name=session["email"], issuer_name="Billboard Advertisement"
+    )
+    img = qrcode.make(uri)
+    buf = BytesIO()
+    img.save(buf, format="PNG")
+    qr_b64 = base64.b64encode(buf.getvalue()).decode()
+
+    return render_template("2fa_setup.html", qr_code=qr_b64)
+
+@app.route("/setup2FA/verify", methods=["GET","POST"])
+def verify_2fa():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    #Decrypts the user's 2FA secret code and compares it to the authenticators code to see if it matches, then it will enable 2FA onto their account if it does.
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT 2fa_secret FROM users WHERE id = %s", (session["user_id"],))
+    user = cursor.fetchone()
+
+    secret = decrypt2FA(user["2fa_secret"])
+    if pyotp.TOTP(secret).verify(request.form["code"]):
+        cursor.execute("UPDATE users SET 2fa_enabled = 1 WHERE id = %s", (session["user_id"],))
+        mysql.connection.commit()
+        cursor.close()
+        flash("2FA has been enabled!", "success")
+        return redirect(url_for("dashboard"))
+    
+    else:
+        cursor.close()
+        flash("Invalid code. Try again.", "error")
+        return redirect(url_for("setup2FA"))
+
+@app.route("/disable2FA")
+def disable2FA():
+    return render_template("2fa_disable.html")
+
+@app.route("/disable2FA/deactivate", methods = ["POST"])
+def deactivate2FA():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT 2fa_secret FROM users WHERE id = %s", (session["user_id"],))
+    user = cursor.fetchone()
+
+    #Decrypts the user's 2FA secret code and compares it to the authenticators code to see if it matches. if it does, it will remove the secret and turn their account into a non-2fa account
+    secret = decrypt2FA(user["2fa_secret"])
+    if pyotp.TOTP(secret).verify(request.form["code"]):
+        cursor.execute("UPDATE users SET 2fa_enabled = 0, 2fa_secret = 0 WHERE id = %s",
+                       (session["user_id"],))
+        mysql.connection.commit()
+        cursor.close()
+        flash("2FA disabled. We recommend you remove your authenticator account since it is now invalid.", "success")
+        return redirect(url_for("dashboard"))
+    
+    else:
+        cursor.close()
+        flash("Invalid code.", "error")
+
+    return redirect(url_for("disable2FA"))
+
+@app.route("/")
 
 #Dashboard for users
 @app.route("/dashboard")
@@ -234,8 +382,12 @@ def dashboard():
         cursor = mysql.connection.cursor()
         cursor.execute("SELECT advert_id, file, caption FROM advertisements WHERE user_id = %s", (user_id,))
         advertisements = cursor.fetchall()
+
+        cursor.execute("SELECT 2fa_enabled FROM users WHERE id = %s", (user_id,))
+        user = cursor.fetchone()
+        cursor.close()
         
-        return render_template("dashboard.html", advertisements = advertisements)
+        return render_template("dashboard.html", advertisements = advertisements, check2FA=user["2fa_enabled"])
     
 
 
@@ -340,6 +492,6 @@ def logout():
 #makes it so that it only runs the app when executed
 if __name__ == "__main__":
     app.run(debug=True, host = "0.0.0.0", port=5000) #shows bugs / errors on CMD + runs on all addresses
-
+    
 
 #END: Code created by Christian
