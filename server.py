@@ -383,11 +383,12 @@ def dashboard():
         cursor.execute("SELECT advert_id, file, caption FROM advertisements WHERE user_id = %s", (user_id,))
         advertisements = cursor.fetchall()
 
-        cursor.execute("SELECT 2fa_enabled FROM users WHERE id = %s", (user_id,))
+        cursor.execute("""SELECT 2fa_enabled, subscription_plan, uploads_used FROM users WHERE id=%s """, (user_id,))
         user = cursor.fetchone()
         cursor.close()
         
-        return render_template("dashboard.html", advertisements = advertisements, check2FA=user["2fa_enabled"])
+        return render_template("dashboard.html", advertisements = advertisements, check2FA=user["2fa_enabled"],
+    plan=user["subscription_plan"],uploads=user["uploads_used"])
     
 
 
@@ -454,6 +455,15 @@ def deleteFile(id):
 
     return redirect(url_for("dashboard"))
 
+#END: Code created by Christian
+
+
+
+#START: Code created by Prakash
+
+
+
+
 
 
 # SUBSCRIPTION
@@ -461,8 +471,55 @@ def deleteFile(id):
 @app.route("/subscription")
 def subscription():
 
-    return render_template("subscription.html")
+    if "user_id" not in session:
+        return redirect(url_for("login"))
 
+    cursor = mysql.connection.cursor()
+
+    cursor.execute("""
+        SELECT subscription_plan,
+               uploads_used
+        FROM users
+        WHERE id=%s
+    """, (session["user_id"],))
+
+    user = cursor.fetchone()
+
+    cursor.close()
+
+    return render_template(
+        "subscription.html",
+        user=user
+    )
+
+
+@app.route("/choose-plan/<plan>")
+def choose_plan(plan):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    valid_plans = ["Basic", "Standard", "Premium"]
+
+    if plan not in valid_plans:
+        flash("Invalid subscription plan", "error")
+        return redirect(url_for("subscription"))
+    
+    cursor = mysql.connection.cursor()
+
+    cursor.execute("""
+            UPDATE users
+            SET subscription_plan=%s,
+                uploads_used=0
+            WHERE id=%s
+        """, (plan, session["user_id"]))
+
+    mysql.connection.commit()
+    cursor.close()
+
+    flash(f"{plan} plan activated successfully!", "success")
+    
+    return redirect(url_for("dashboard"))
 
 
 
@@ -483,6 +540,11 @@ def analytics():
     return render_template("analytics.html")        
        
 
+#END: Code created by Prakash       
+
+
+
+
 @app.route('/logout')
 def logout():
     session.clear()
@@ -494,4 +556,4 @@ if __name__ == "__main__":
     app.run(debug=True, host = "0.0.0.0", port=5000) #shows bugs / errors on CMD + runs on all addresses
     
 
-#END: Code created by Christian
+
