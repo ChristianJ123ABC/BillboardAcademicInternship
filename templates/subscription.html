@@ -133,6 +133,21 @@
 
 </nav>
 
+
+<div class="alert alert-info text-center">
+
+    <h4>
+        Current Plan:
+        {{ user.subscription_plan }}
+    </h4>
+
+    <p>
+        Uploads Used:
+        {{ user.uploads_used }}
+    </p>
+
+</div>
+
 <!-- PAGE HEADER -->
 
 <div class="container mt-5">
@@ -195,11 +210,12 @@
 
                     </ul>
 
-                    <button class="btn btn-outline-primary w-100 mt-4">
+                    <a href="{{ url_for('choose_plan', plan='Basic') }}"
+                    class="btn btn-primary w-100">
 
-                        Choose Plan
+                    Choose Basic
 
-                    </button>
+                    </a>
 
                 </div>
 
@@ -249,11 +265,13 @@
 
                     </ul>
 
-                    <button class="btn btn-success w-100 mt-4">
+                        <a href="{{ url_for('choose_plan',
+                        plan='Standard') }}"
+                        class="btn btn-success w-100">
 
-                        Choose Plan
+                        Choose Standard
 
-                    </button>
+                        </a>
 
                 </div>
 
@@ -311,11 +329,13 @@
 
                     </ul>
 
-                    <button class="btn btn-danger w-100 mt-4">
+                    <a href="{{ url_for('choose_plan',
+                    plan='Premium') }}"
+                    class="btn btn-danger w-100">
 
-                        Choose Plan
+                    Choose Premium
 
-                    </button>
+                    </a>
 
                 </div>
 
