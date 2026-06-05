@@ -383,11 +383,12 @@ def dashboard():
         cursor.execute("SELECT advert_id, file, caption FROM advertisements WHERE user_id = %s", (user_id,))
         advertisements = cursor.fetchall()
 
-        cursor.execute("SELECT 2fa_enabled FROM users WHERE id = %s", (user_id,))
+        cursor.execute("""SELECT 2fa_enabled, subscription_plan, uploads_used FROM users WHERE id=%s """, (user_id,))
         user = cursor.fetchone()
         cursor.close()
         
-        return render_template("dashboard.html", advertisements = advertisements, check2FA=user["2fa_enabled"])
+        return render_template("dashboard.html", advertisements = advertisements, check2FA=user["2fa_enabled"],
+    plan=user["subscription_plan"],uploads=user["uploads_used"])
     
 
 
@@ -501,33 +502,24 @@ def choose_plan(plan):
     valid_plans = ["Basic", "Standard", "Premium"]
 
     if plan not in valid_plans:
-
         flash("Invalid subscription plan", "error")
-
         return redirect(url_for("subscription"))
-
+    
     cursor = mysql.connection.cursor()
 
     cursor.execute("""
-        UPDATE users
-        SET subscription_plan=%s,
-            uploads_used=0
-        WHERE id=%s
-    """, (
-        plan,
-        session["user_id"]
-    ))
+            UPDATE users
+            SET subscription_plan=%s,
+                uploads_used=0
+            WHERE id=%s
+        """, (plan, session["user_id"]))
 
     mysql.connection.commit()
-
     cursor.close()
 
-    flash(
-        f"{plan} plan activated successfully!",
-        "success"
-    )
-
-    return redirect(url_for("subscription"))
+    flash(f"{plan} plan activated successfully!", "success")
+    
+    return redirect(url_for("dashboard"))
 
 
 
