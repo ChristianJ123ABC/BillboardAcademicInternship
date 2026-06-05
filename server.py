@@ -71,6 +71,7 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives import hashes
 from cryptography.fernet import Fernet
 
+
 #pip install pyotp
 #pip install pillow
 import pyotp, qrcode
@@ -383,12 +384,12 @@ def dashboard():
         cursor.execute("SELECT advert_id, file, caption FROM advertisements WHERE user_id = %s", (user_id,))
         advertisements = cursor.fetchall()
 
-        cursor.execute("""SELECT 2fa_enabled, subscription_plan, uploads_used FROM users WHERE id=%s """, (user_id,))
+        cursor.execute("""SELECT 2fa_enabled, subscription_plan, uploads_used, subscription_expiry FROM users WHERE id=%s """, (user_id,))
         user = cursor.fetchone()
         cursor.close()
         
         return render_template("dashboard.html", advertisements = advertisements, check2FA=user["2fa_enabled"],
-    plan=user["subscription_plan"],uploads=user["uploads_used"])
+    plan=user["subscription_plan"],uploads=user["uploads_used"], expiry=user["subscription_expiry"])
     
 
 
@@ -408,6 +409,64 @@ def uploadAdvertisement():
     else:
         if request.method == "POST":
             user_id = session["user_id"]
+            
+            #
+            #
+            #Start: prakash code
+            #Get user's subscription information
+            cursor = mysql.connection.cursor()
+
+            cursor.execute("""
+                SELECT subscription_plan,
+                       uploads_used,
+                       subscription_expiry
+                FROM users
+                WHERE id = %s
+            """, (user_id,))
+
+            user = cursor.fetchone()
+
+            #Check if subscription has expired
+            if user["subscription_expiry"] is not None:
+
+                from datetime import datetime
+
+                if user["subscription_expiry"] < datetime.now():
+
+                    flash("Your subscription has expired. Please renew your plan.", "error")
+
+                    cursor.close()
+
+                    return redirect(url_for("subscription"))
+
+            #Upload limits for each plan
+            limits = {
+                "Basic": 2,
+                "Standard": 5,
+                "Premium": 999999
+            }
+
+            currentPlan = user["subscription_plan"]
+            uploadsUsed = user["uploads_used"]
+
+            #Get upload limit for current plan
+            uploadLimit = limits.get(currentPlan, 0)
+
+            #Prevent uploads if limit reached
+            if uploadsUsed >= uploadLimit:
+
+                flash(
+                    f"You have reached the upload limit for the {currentPlan} plan.",
+                    "error"
+                )
+
+                cursor.close()
+
+                return redirect(url_for("dashboard"))
+                # End : prakash code
+                #
+                #
+
             file = request.files['file']
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
             
@@ -504,21 +563,31 @@ def choose_plan(plan):
     if plan not in valid_plans:
         flash("Invalid subscription plan", "error")
         return redirect(url_for("subscription"))
-    
+
+    start_date = datetime.now()
+    expiry_date = start_date + timedelta(days=30)
+
     cursor = mysql.connection.cursor()
 
     cursor.execute("""
-            UPDATE users
-            SET subscription_plan=%s,
-                uploads_used=0
-            WHERE id=%s
-        """, (plan, session["user_id"]))
+        UPDATE users
+        SET subscription_plan=%s,
+            uploads_used=0,
+            subscription_start=%s,
+            subscription_expiry=%s
+        WHERE id=%s
+    """, (
+        plan,
+        start_date,
+        expiry_date,
+        session["user_id"]
+    ))
 
     mysql.connection.commit()
     cursor.close()
 
     flash(f"{plan} plan activated successfully!", "success")
-    
+
     return redirect(url_for("dashboard"))
 
 
