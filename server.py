@@ -596,15 +596,41 @@ def choose_plan(plan):
 
 # SCHEDULING ROUTE
 
-@app.route("/scheduling")
+@app.route("/scheduling", methods = ["GET", "POST"])
 def scheduling():
 
     if request.method == "GET":
-        return render_template("scheduling.html")
+        cursor = mysql.connection.cursor()
+
+        cursor.execute("""
+                    SELECT caption,
+                           advert_id
+                    FROM advertisements
+                    WHERE user_id=%s
+                """, (session["user_id"],))
+
+        advertisements = cursor.fetchall()
+
+        cursor.close()
+        print(advertisements)
+        return render_template("scheduling.html", advertisements = advertisements)
 
     else:
         if request.method == "POST":
-            pass
+            # Insert schedule into database
+            advert_id = int(request.form.get('advert_id'))
+            location = request.form.get('location')
+            time = request.form.get('time')
+            date_start = datetime.strptime(request.form.get('date_start'), "%Y-%m-%d").date()
+            date_end = datetime.strptime(request.form.get('date_end'), "%Y-%m-%d").date()
+            cursor = mysql.connection.cursor()
+            cursor.execute("INSERT INTO schedules (advert_id, location, time, date_start, date_end) VALUES (%s, %s, %s, %s, %s)",
+                           (advert_id, location, time, date_start, date_end ))
+            mysql.connection.commit()
+            cursor.close()
+            return redirect(url_for('scheduling'))
+
+
 
 # ANALYTICS ROUTE
 
