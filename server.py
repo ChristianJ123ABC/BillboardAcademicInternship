@@ -441,12 +441,12 @@ def uploadAdvertisement():
 
             #Upload limits for each plan
             limits = {
-                "Basic": 2,
-                "Standard": 5,
-                "Premium": 999999
+                "basic": 2,
+                "standard": 5,
+                "premium": 999999
             }
 
-            currentPlan = user["subscription_plan"]
+            currentPlan = user["subscription_plan"].lower()
             uploadsUsed = user["uploads_used"]
 
             #Get upload limit for current plan
@@ -454,6 +454,7 @@ def uploadAdvertisement():
 
             #Prevent uploads if limit reached
             if uploadsUsed >= uploadLimit:
+
 
                 flash(
                     f"You have reached the upload limit for the {currentPlan} plan.",
@@ -598,8 +599,12 @@ def choose_plan(plan):
 @app.route("/scheduling")
 def scheduling():
 
-    return render_template("scheduling.html")
+    if request.method == "GET":
+        return render_template("scheduling.html")
 
+    else:
+        if request.method == "POST":
+            pass
 
 # ANALYTICS ROUTE
 
