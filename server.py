@@ -27,6 +27,18 @@
 #https://github.com/pyauth/pyotp
 
 #FUTURE NOTES: DOCKER ISSUES
+#PUT THIS SECTION IN THE DOCKERFILE TO ALLOW THE USER TO UPLOAD FILES VIA DOCKER
+
+# Copy the source code into the container.
+#COPY . .
+#RUN mkdir -p /app/static/uploads && chown -R appuser:appuser /app/static/uploads
+
+# Switch to the non-privileged user to run the application.
+#USER appuser
+
+
+
+
 #Command to fix flask_mysqldb issues with docker: ADD INTO dockerfile UNDER WORKDIR /app
 #RUN apt-get update && apt-get install -y --no-install-recommends \
     #build-essential \
@@ -104,6 +116,7 @@ def decrypt2FA(ciphertext):
 #Extensions used when uploading files
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'mp4', 'mov', 'mkv',}
 app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static/uploads')
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 #Validation Functions
 #Format: email@domain.com / name.last@domain.co.uk
@@ -469,9 +482,7 @@ def uploadAdvertisement():
                 #
 
             file = request.files['file']
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-            
-            #No file selected
+             #No file selected
             if not file or file.filename == '':
                 flash("No file selected", "error")
                 return redirect(url_for("uploadAdvertisement"))
@@ -480,7 +491,12 @@ def uploadAdvertisement():
                 flash("Invalid image type, use the following image extensions: 'png', 'jpg', 'jpeg', 'mp4', 'mov', 'mkv' ", "error")
                 return redirect(url_for("uploadAdvertisement"))
             
+            
+            
+           
+            
             #Create filepath to store in database
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
             file.save(filepath)
             uploadFilePath = os.path.join('uploads', file.filename)
 
