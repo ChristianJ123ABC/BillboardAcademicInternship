@@ -1,3 +1,5 @@
+
+<!-- START: Prakash Code -->
 <!DOCTYPE html>
 <html lang="en">
 
@@ -81,9 +83,24 @@
 {% endwith %}
 
 <!-- CURRENT PLAN -->
+
 <div class="current-plan">
-    <h3>Current Plan: {{ user.subscription_plan }}</h3>
-    <p>Uploads Used: {{ user.uploads_used }}</p>
+
+    <h3>
+        Current Plan:
+        {{ plan }}
+    </h3>
+
+    <p>
+        Uploads Used:
+        {{ uploads }}
+    </p>
+
+    <p>
+        Membership Expires:
+        {{ expiry }}
+    </p>
+
 </div>
 
 <!-- TITLE -->
@@ -155,3 +172,5 @@
 
 </body>
 </html>
+
+<!-- END: Prakash Code -->

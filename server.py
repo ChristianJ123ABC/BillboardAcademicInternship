@@ -397,13 +397,51 @@ def dashboard():
         cursor.execute("SELECT advert_id, file, caption FROM advertisements WHERE user_id = %s", (user_id,))
         advertisements = cursor.fetchall()
 
-        cursor.execute("""SELECT 2fa_enabled, subscription_plan, uploads_used, subscription_expiry FROM users WHERE id=%s """, (user_id,))
+
+        #Start code : Prakash
+        # Get user subscription information
+        cursor.execute("""
+        SELECT
+            2fa_enabled,
+            subscription_plan,
+            subscription_expiry
+        FROM users
+        WHERE id=%s
+        """, (user_id,))
+
         user = cursor.fetchone()
+
+        #
+        # Count user's uploaded advertisements
+        #
+
+        cursor.execute("""
+        SELECT COUNT(*) AS total
+        FROM advertisements
+        WHERE user_id=%s
+        """, (user_id,))
+
+        count = cursor.fetchone()
+
         cursor.close()
-        
-        return render_template("dashboard.html", advertisements = advertisements, check2FA=user["2fa_enabled"],
-    plan=user["subscription_plan"],uploads=user["uploads_used"], expiry=user["subscription_expiry"])
-    
+
+        return render_template(
+
+            "dashboard.html",
+
+            advertisements=advertisements,
+
+            check2FA=user["2fa_enabled"],
+
+            plan=user["subscription_plan"],
+
+            uploads=count["total"],
+
+            expiry=user["subscription_expiry"]
+
+        )
+        #End code: Prakash 
+
 
 
 #Page for users to display their advertisments
@@ -460,9 +498,25 @@ def uploadAdvertisement():
             }
 
             currentPlan = user["subscription_plan"].lower()
-            uploadsUsed = user["uploads_used"]
 
-            #Get upload limit for current plan
+            #
+            # Count advertisements already uploaded
+            #
+
+            cursor.execute("""
+            SELECT COUNT(*) AS total
+            FROM advertisements
+            WHERE user_id=%s
+            """, (user_id,))
+
+            result = cursor.fetchone()
+
+            uploadsUsed = result["total"]
+
+            #
+            # Get upload limit
+            #
+
             uploadLimit = limits.get(currentPlan, 0)
 
             #Prevent uploads if limit reached
@@ -539,9 +593,6 @@ def deleteFile(id):
 
 
 
-
-
-
 # SUBSCRIPTION
 
 @app.route("/subscription")
@@ -550,22 +601,44 @@ def subscription():
     if "user_id" not in session:
         return redirect(url_for("login"))
 
+    user_id = session["user_id"]
+
     cursor = mysql.connection.cursor()
 
+    # Get subscription details
+
     cursor.execute("""
-        SELECT subscription_plan,
-               uploads_used
+        SELECT
+            subscription_plan,
+            subscription_expiry
         FROM users
         WHERE id=%s
-    """, (session["user_id"],))
+    """, (user_id,))
 
     user = cursor.fetchone()
+
+    # Count advertisements
+
+    cursor.execute("""
+        SELECT COUNT(*) AS total
+        FROM advertisements
+        WHERE user_id=%s
+    """, (user_id,))
+
+    count = cursor.fetchone()
 
     cursor.close()
 
     return render_template(
+
         "subscription.html",
-        user=user
+
+        plan=user["subscription_plan"],
+
+        uploads=count["total"],
+
+        expiry=user["subscription_expiry"]
+
     )
 
 
