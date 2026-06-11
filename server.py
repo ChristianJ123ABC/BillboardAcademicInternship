@@ -26,6 +26,9 @@
 #https://pyauth.github.io/pyotp/
 #https://github.com/pyauth/pyotp
 
+#Error Handling
+#https://flask.palletsprojects.com/en/stable/errorhandling/
+
 #FUTURE NOTES: DOCKER ISSUES
 #PUT THIS SECTION IN THE DOCKERFILE TO ALLOW THE USER TO UPLOAD FILES VIA DOCKER
 
@@ -64,6 +67,7 @@
 #START: CODE COMPLETED BY CHRISTIAN
 from flask import Flask, render_template, redirect, url_for, request, session, flash #pip install flask
 from flask_mysqldb import MySQL #pip install flask_mysqldb  (PYTHON 3.11)
+import werkzeug
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import Flask, redirect, request, render_template
 from flask import request, jsonify
@@ -88,6 +92,7 @@ from cryptography.fernet import Fernet
 #pip install pillow
 import pyotp, qrcode
 
+
 #START: Code created by Christian
 #Used to access the Database 
 
@@ -105,6 +110,24 @@ mysql = MySQL(app)
 #Used to create 2FA secret key
 f = Fernet(os.getenv("TOTP_ENCRYPTION_KEY").encode())
 
+#Error / Exception Handling Functions
+
+#User trys to access a page that does not exist
+@app.errorhandler(werkzeug.exceptions.NotFound)
+def handle_notfound_request(e):
+    return 'Page not found! Please try a new page', 404
+
+#User trys to upload a too large file
+@app.errorhandler(werkzeug.exceptions.RequestEntityTooLarge)
+def handle_file_too_large(e):
+    flash("File is too large", "error")
+    return redirect(url_for("uploadAdvertisement")), 413
+
+#Overall check incase something errors in the server
+@app.errorhandler(werkzeug.exceptions.InternalServerError)
+def handle_server_error(e):
+   return "Conflict has occurred, please try again.", 500
+  
 
 #Encryption + Decryption Functions
 def encrypt2FA(plaintext):
@@ -126,6 +149,13 @@ def validEmail(email):
 def existingEmail(email):
     cursor = mysql.connection.cursor()
     cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
+    user = cursor.fetchone()
+    cursor.close()
+    return user
+
+def existingFile(file):
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT * FROM advertisements WHERE file = %s", (file,))
     user = cursor.fetchone()
     cursor.close()
     return user
@@ -448,10 +478,6 @@ def dashboard():
 @app.route("/uploadAdvertisement", methods = ["GET", "POST"])
 def uploadAdvertisement():
 
-    #Reminder: add in a check to see if they are subscribed to upload advertisements once upload works
-   # if request.method == "GET":
-    #    cursor = mysql.connection.cursor()
-     #   user_id = session["user_id"]
     
     if request.method == "GET":
         return render_template("uploadAdvertisement.html")
@@ -545,6 +571,9 @@ def uploadAdvertisement():
                 flash("Invalid image type, use the following image extensions: 'png', 'jpg', 'jpeg', 'mp4', 'mov', 'mkv' ", "error")
                 return redirect(url_for("uploadAdvertisement"))
             
+            if existingFile(file):
+                flash("File already exists", "error")
+                return redirect(url_for("uploadAdvertisement"))
             
             
            
@@ -572,6 +601,12 @@ def deleteFile(id):
     cursor = mysql.connection.cursor()
     cursor.execute("SELECT file FROM advertisements WHERE advert_id = %s", (id,))
     adFile = cursor.fetchone()
+
+    if not adFile:
+        flash("You are trying to delete a file that does not belong to you.", "warning")
+        return redirect((url_for("dashboard")))
+    
+
     fileName = adFile['file'] 
     
 
