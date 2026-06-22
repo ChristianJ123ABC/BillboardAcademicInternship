@@ -427,6 +427,13 @@ def dashboard():
         cursor.execute("SELECT advert_id, file, caption FROM advertisements WHERE user_id = %s", (user_id,))
         advertisements = cursor.fetchall()
 
+        statistics = {
+
+        }
+        for advertisement in advertisements:
+            cursor.execute("SELECT advert_id, location, time, date_start, date_end FROM schedules WHERE advert_id = %s", (advertisement["advert_id"],))
+            statistics[advertisement["advert_id"]] = cursor.fetchone()
+
 
         #Start code : Prakash
         # Get user subscription information
@@ -458,6 +465,8 @@ def dashboard():
         return render_template(
 
             "dashboard.html",
+
+            statistics=statistics,
 
             advertisements=advertisements,
 
