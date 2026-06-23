@@ -162,6 +162,13 @@
                             <option>Airport Road</option>
                             <option>Shopping Mall</option>
                             <option>Train Station</option>
+                            {% if subscription_plan == "Standard" or subscription_plan == "Premium" %}
+                                <option>O'Connell Street</option>
+                            {% endif %}
+
+                            {% if subscription_plan == "Premium" %}
+                                <option>Rathgar</option>
+                            {% endif %}
 
                         </select>
 

@@ -744,9 +744,12 @@ def scheduling():
 
         advertisements = cursor.fetchall()
 
+        cursor.execute("""SELECT subscription_plan FROM users WHERE id=%s""", (session["user_id"],))
+        subscription_plan = cursor.fetchone()["subscription_plan"]
+
         cursor.close()
         print(advertisements)
-        return render_template("scheduling.html", advertisements = advertisements)
+        return render_template("scheduling.html", advertisements = advertisements, subscription_plan = subscription_plan)
 
     else:
         if request.method == "POST":
