@@ -89,6 +89,7 @@ app.config['MYSQL_DB'] = os.getenv('MYSQL_DB')
 app.config['MYSQL_PORT'] = int(os.getenv('MYSQL_PORT'))
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 app.secret_key = os.getenv("SECRET_KEY") 
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 mysql = MySQL(app)
 
 #Used to create 2FA secret key
