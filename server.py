@@ -75,6 +75,7 @@ from cryptography.fernet import Fernet
 #pip install pyotp
 #pip install pillow
 import pyotp, qrcode
+import stripe #pip install stripe
 
 #START: Code created by Christian
 #Used to access the Database 
