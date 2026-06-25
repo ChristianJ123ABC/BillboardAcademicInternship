@@ -159,15 +159,20 @@
                         <select class="form-select" name="location">
 
                             <option>Dublin City Center</option>
-                            <option>Airport Road</option>
-                            <option>Shopping Mall</option>
-                            <option>Train Station</option>
+                            <option>Airport Terminal 1</option>
+                            <option>Swords Pavilions Shopping Centre</option>
+                            <option>Connolly Train Station</option>
                             {% if subscription_plan == "Standard" or subscription_plan == "Premium" %}
                                 <option>O'Connell Street</option>
+                                <option>Airport Terminal 2</option>
+                                <option>ILAC Shopping Centre</option>
                             {% endif %}
 
                             {% if subscription_plan == "Premium" %}
-                                <option>Rathgar</option>
+                                <option>St. Stephen's Green</option>
+                                <option>Temple Bar</option>
+                                <option>Grafton Street</option>
+                                <option>Jervis Shopping Centre</option>
                             {% endif %}
 
                         </select>
@@ -214,11 +219,22 @@
 
                         <select class="form-select" name="time">
 
-                            <option>08:00 AM - 12:00 PM</option>
-                            <option>12:00 PM - 04:00 PM</option>
-                            <option>04:00 PM - 08:00 PM</option>
-                            <option>08:00 PM - 12:00 AM</option>
+                            <option>08:00 AM - 10:00 AM</option>
+                            <option>12:00 PM - 02:00 PM</option>
+                            <option>04:00 PM - 06:00 PM</option>
+                            <option>08:00 PM - 10:00 PM</option>
+                            {% if subscription_plan == "Standard" or subscription_plan == "Premium" %}
+                            <option>10:00 AM - 12:00 PM</option>
+                            <option>02:00 PM - 04:00 PM</option>
+                            <option>06:00 PM - 08:00 PM</option>
+                            <option>10:00 PM - 12:00 AM</option>
+                            {% endif %}
 
+                            {% if subscription_plan == "Premium" %}
+                            <option>12:00 AM - 04:00 AM</option>
+                            <option>04:00 AM - 08:00 AM</option>
+                            <option>08:00 AM - 06:00 PM</option>
+                            {% endif %}
                         </select>
 
                     </div>
