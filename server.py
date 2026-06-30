@@ -18,6 +18,7 @@
 #https://flask.palletsprojects.com/en/stable/patterns/fileuploads/
 #https://www.youtube.com/watch?v=2De9Lu9tReg
 #https://www.youtube.com/watch?v=YLptAhf3wwM&t=963s
+#https://www.w3schools.com/python/python_lists_comprehension.asp
 
 #Two Factor Authentication
 #https://cryptography.io/en/latest/fernet/
@@ -438,6 +439,19 @@ def dashboard():
         cursor.execute("SELECT advert_id, file, caption FROM advertisements WHERE user_id = %s", (user_id,))
         advertisements = cursor.fetchall()
 
+
+        #Used to filter out advertisements that display files that don't exist
+        #Checks to see if the file exists and if it does, it will send that advertisement to the dashboard and display it.
+        root = os.path.dirname(os.path.abspath(__file__))
+        existingAdvertisements = []
+        
+        for advertisement in advertisements:
+            filePath = os.path.join(root, 'static', advertisement["file"])
+            if os.path.exists(filePath):
+                 existingAdvertisements.append(advertisement)
+        
+        advertisements =  existingAdvertisements 
+        
         statistics = {
 
         }
