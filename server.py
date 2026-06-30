@@ -26,7 +26,22 @@
 #https://pyauth.github.io/pyotp/
 #https://github.com/pyauth/pyotp
 
+#Error Handling
+#https://flask.palletsprojects.com/en/stable/errorhandling/
+
 #FUTURE NOTES: DOCKER ISSUES
+#PUT THIS SECTION IN THE DOCKERFILE TO ALLOW THE USER TO UPLOAD FILES VIA DOCKER
+
+# Copy the source code into the container.
+#COPY . .
+#RUN mkdir -p /app/static/uploads && chown -R appuser:appuser /app/static/uploads
+
+# Switch to the non-privileged user to run the application.
+#USER appuser
+
+
+
+
 #Command to fix flask_mysqldb issues with docker: ADD INTO dockerfile UNDER WORKDIR /app
 #RUN apt-get update && apt-get install -y --no-install-recommends \
     #build-essential \
@@ -52,6 +67,7 @@
 #START: CODE COMPLETED BY CHRISTIAN
 from flask import Flask, render_template, redirect, url_for, request, session, flash #pip install flask
 from flask_mysqldb import MySQL #pip install flask_mysqldb  (PYTHON 3.11)
+import werkzeug
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import Flask, redirect, request, render_template
 from flask import request, jsonify
@@ -77,6 +93,7 @@ from cryptography.fernet import Fernet
 import pyotp, qrcode
 import stripe #pip install stripe
 
+
 #START: Code created by Christian
 #Used to access the Database 
 
@@ -95,6 +112,24 @@ mysql = MySQL(app)
 #Used to create 2FA secret key
 f = Fernet(os.getenv("TOTP_ENCRYPTION_KEY").encode())
 
+#Error / Exception Handling Functions
+
+#User trys to access a page that does not exist
+@app.errorhandler(werkzeug.exceptions.NotFound)
+def handle_notfound_request(e):
+    return 'Page not found! Please try a new page', 404
+
+#User trys to upload a too large file
+@app.errorhandler(werkzeug.exceptions.RequestEntityTooLarge)
+def handle_file_too_large(e):
+    flash("File is too large", "error")
+    return redirect(url_for("uploadAdvertisement")), 413
+
+#Overall check incase something errors in the server
+@app.errorhandler(werkzeug.exceptions.InternalServerError)
+def handle_server_error(e):
+   return "Conflict has occurred, please try again.", 500
+  
 
 #Encryption + Decryption Functions
 def encrypt2FA(plaintext):
@@ -106,6 +141,7 @@ def decrypt2FA(ciphertext):
 #Extensions used when uploading files
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'mp4', 'mov', 'mkv',}
 app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static/uploads')
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 #Validation Functions
 #Format: email@domain.com / name.last@domain.co.uk
@@ -115,6 +151,13 @@ def validEmail(email):
 def existingEmail(email):
     cursor = mysql.connection.cursor()
     cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
+    user = cursor.fetchone()
+    cursor.close()
+    return user
+
+def existingFile(file):
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT * FROM advertisements WHERE file = %s", (file,))
     user = cursor.fetchone()
     cursor.close()
     return user
@@ -178,8 +221,8 @@ def register():
             flash("Password has to contain atleast 1 special character.")
             return render_template("register.html", businessName = businessName, firstName = firstName, lastName = lastName, email = email) 
 
-        elif len(password) < 15 or len(password) > 30:
-            flash("Password has to be between 15 and 30 characters.")
+        elif len(password) < 10 or len(password) > 30:
+            flash("Password has to be between 10 and 30 characters.")
             return render_template("register.html", businessName = businessName, firstName = firstName, lastName = lastName, email = email) 
         
         else:
@@ -386,23 +429,66 @@ def dashboard():
         cursor.execute("SELECT advert_id, file, caption FROM advertisements WHERE user_id = %s", (user_id,))
         advertisements = cursor.fetchall()
 
-        cursor.execute("""SELECT 2fa_enabled, subscription_plan, uploads_used, subscription_expiry FROM users WHERE id=%s """, (user_id,))
+        statistics = {
+
+        }
+        for advertisement in advertisements:
+            cursor.execute("SELECT advert_id, location, time, date_start, date_end FROM schedules WHERE advert_id = %s", (advertisement["advert_id"],))
+            statistics[advertisement["advert_id"]] = cursor.fetchone()
+
+
+        #Start code : Prakash
+        # Get user subscription information
+        cursor.execute("""
+        SELECT
+            2fa_enabled,
+            subscription_plan,
+            subscription_expiry
+        FROM users
+        WHERE id=%s
+        """, (user_id,))
+
         user = cursor.fetchone()
+
+        #
+        # Count user's uploaded advertisements
+        #
+
+        cursor.execute("""
+        SELECT COUNT(*) AS total
+        FROM advertisements
+        WHERE user_id=%s
+        """, (user_id,))
+
+        count = cursor.fetchone()
+
         cursor.close()
-        
-        return render_template("dashboard.html", advertisements = advertisements, check2FA=user["2fa_enabled"],
-    plan=user["subscription_plan"],uploads=user["uploads_used"], expiry=user["subscription_expiry"])
-    
+
+        return render_template(
+
+            "dashboard.html",
+
+            statistics=statistics,
+
+            advertisements=advertisements,
+
+            check2FA=user["2fa_enabled"],
+
+            plan=user["subscription_plan"],
+
+            uploads=count["total"],
+
+            expiry=user["subscription_expiry"]
+
+        )
+        #End code: Prakash 
+
 
 
 #Page for users to display their advertisments
 @app.route("/uploadAdvertisement", methods = ["GET", "POST"])
 def uploadAdvertisement():
 
-    #Reminder: add in a check to see if they are subscribed to upload advertisements once upload works
-   # if request.method == "GET":
-    #    cursor = mysql.connection.cursor()
-     #   user_id = session["user_id"]
     
     if request.method == "GET":
         return render_template("uploadAdvertisement.html")
@@ -443,19 +529,36 @@ def uploadAdvertisement():
 
             #Upload limits for each plan
             limits = {
-                "Basic": 2,
-                "Standard": 5,
-                "Premium": 999999
+                "basic": 2,
+                "standard": 5,
+                "premium": 999999
             }
 
-            currentPlan = user["subscription_plan"]
-            uploadsUsed = user["uploads_used"]
+            currentPlan = user["subscription_plan"].lower()
 
-            #Get upload limit for current plan
+            #
+            # Count advertisements already uploaded
+            #
+
+            cursor.execute("""
+            SELECT COUNT(*) AS total
+            FROM advertisements
+            WHERE user_id=%s
+            """, (user_id,))
+
+            result = cursor.fetchone()
+
+            uploadsUsed = result["total"]
+
+            #
+            # Get upload limit
+            #
+
             uploadLimit = limits.get(currentPlan, 0)
 
             #Prevent uploads if limit reached
             if uploadsUsed >= uploadLimit:
+
 
                 flash(
                     f"You have reached the upload limit for the {currentPlan} plan.",
@@ -470,9 +573,7 @@ def uploadAdvertisement():
                 #
 
             file = request.files['file']
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-            
-            #No file selected
+             #No file selected
             if not file or file.filename == '':
                 flash("No file selected", "error")
                 return redirect(url_for("uploadAdvertisement"))
@@ -481,7 +582,15 @@ def uploadAdvertisement():
                 flash("Invalid image type, use the following image extensions: 'png', 'jpg', 'jpeg', 'mp4', 'mov', 'mkv' ", "error")
                 return redirect(url_for("uploadAdvertisement"))
             
+            if existingFile(file):
+                flash("File already exists", "error")
+                return redirect(url_for("uploadAdvertisement"))
+            
+            
+           
+            
             #Create filepath to store in database
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
             file.save(filepath)
             uploadFilePath = os.path.join('uploads', file.filename)
 
@@ -503,6 +612,12 @@ def deleteFile(id):
     cursor = mysql.connection.cursor()
     cursor.execute("SELECT file FROM advertisements WHERE advert_id = %s", (id,))
     adFile = cursor.fetchone()
+
+    if not adFile:
+        flash("You are trying to delete a file that does not belong to you.", "warning")
+        return redirect((url_for("dashboard")))
+    
+
     fileName = adFile['file'] 
     
 
@@ -524,9 +639,6 @@ def deleteFile(id):
 
 
 
-
-
-
 # SUBSCRIPTION
 
 @app.route("/subscription")
@@ -535,7 +647,11 @@ def subscription():
     if "user_id" not in session:
         return redirect(url_for("login"))
 
+    user_id = session["user_id"]
+
     cursor = mysql.connection.cursor()
+
+    # Get subscription details
 
     cursor.execute("""
         SELECT subscription_plan,
@@ -543,15 +659,32 @@ def subscription():
                subscription_expiry
         FROM users
         WHERE id=%s
-    """, (session["user_id"],))
+    """, (user_id,))
 
     user = cursor.fetchone()
+
+    # Count advertisements
+
+    cursor.execute("""
+        SELECT COUNT(*) AS total
+        FROM advertisements
+        WHERE user_id=%s
+    """, (user_id,))
+
+    count = cursor.fetchone()
 
     cursor.close()
 
     return render_template(
+
         "subscription.html",
-        user=user
+
+        plan=user["subscription_plan"],
+
+        uploads=count["total"],
+
+        expiry=user["subscription_expiry"]
+
     )
 
 
@@ -705,10 +838,43 @@ def payment_success(plan):
 
 # SCHEDULING ROUTE
 
-@app.route("/scheduling")
+@app.route("/scheduling", methods = ["GET", "POST"])
 def scheduling():
 
-    return render_template("scheduling.html")
+    if request.method == "GET":
+        cursor = mysql.connection.cursor()
+
+        cursor.execute("""
+                    SELECT caption,
+                           advert_id
+                    FROM advertisements
+                    WHERE user_id=%s
+                """, (session["user_id"],))
+
+        advertisements = cursor.fetchall()
+
+        cursor.execute("""SELECT subscription_plan FROM users WHERE id=%s""", (session["user_id"],))
+        subscription_plan = cursor.fetchone()["subscription_plan"]
+
+        cursor.close()
+        print(advertisements)
+        return render_template("scheduling.html", advertisements = advertisements, subscription_plan = subscription_plan)
+
+    else:
+        if request.method == "POST":
+            # Insert schedule into database
+            advert_id = int(request.form.get('advert_id'))
+            location = request.form.get('location')
+            time = request.form.get('time')
+            date_start = datetime.strptime(request.form.get('date_start'), "%Y-%m-%d").date()
+            date_end = datetime.strptime(request.form.get('date_end'), "%Y-%m-%d").date()
+            cursor = mysql.connection.cursor()
+            cursor.execute("INSERT INTO schedules (advert_id, location, time, date_start, date_end) VALUES (%s, %s, %s, %s, %s)",
+                           (advert_id, location, time, date_start, date_end ))
+            mysql.connection.commit()
+            cursor.close()
+            return redirect(url_for('scheduling'))
+
 
 
 # ANALYTICS ROUTE

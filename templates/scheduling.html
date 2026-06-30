@@ -123,92 +123,139 @@
 
     <!-- SCHEDULING FORM -->
 
-    <div class="card shadow border-0">
 
-        <div class="card-body p-4">
+    <form id = "upload" action="/scheduling" method="POST" class = "upload" enctype="multipart/form-data">
+        <div class="card shadow border-0">
 
-            <form>
+            <div class="card-body p-4">
 
-                <!-- BILLBOARD LOCATION -->
+                <form>
 
-                <div class="mb-3">
+                    <!-- ADVERTISEMENT SELECTION -->
 
-                    <label class="form-label">
-                        Billboard Location
-                    </label>
+                    <div class="mb-3">
 
-                    <select class="form-select">
+                        <label class="form-label">
+                            Select Advertisement
+                        </label>
 
-                        <option>Dublin City Center</option>
-                        <option>Airport Road</option>
-                        <option>Shopping Mall</option>
-                        <option>Train Station</option>
+                        <select class="form-select" name="advert_id">
 
-                    </select>
+                            {% for advertisement in advertisements %}
+                            <option value= "{{ advertisement.advert_id }}" > {{ advertisement.caption }} </option>
+                            {% endfor %}
+                        </select>
 
-                </div>
+                    </div>
 
-                <!-- DATE -->
+                    <!-- BILLBOARD LOCATION -->
 
-                <div class="mb-3">
+                    <div class="mb-3">
 
-                    <label class="form-label">
-                        Campaign Date
-                    </label>
+                        <label class="form-label">
+                            Billboard Location
+                        </label>
 
-                    <input type="date"
-                           class="form-control">
+                        <select class="form-select" name="location">
 
-                </div>
+                            <option>Dublin City Center</option>
+                            <option>Airport Terminal 1</option>
+                            <option>Swords Pavilions Shopping Centre</option>
+                            <option>Connolly Train Station</option>
+                            {% if subscription_plan == "Standard" or subscription_plan == "Premium" %}
+                                <option>O'Connell Street</option>
+                                <option>Airport Terminal 2</option>
+                                <option>ILAC Shopping Centre</option>
+                            {% endif %}
 
-                <!-- TIME SLOT -->
+                            {% if subscription_plan == "Premium" %}
+                                <option>St. Stephen's Green</option>
+                                <option>Temple Bar</option>
+                                <option>Grafton Street</option>
+                                <option>Jervis Shopping Centre</option>
+                            {% endif %}
 
-                <div class="mb-3">
+                        </select>
 
-                    <label class="form-label">
-                        Time Slot
-                    </label>
+                    </div>
 
-                    <select class="form-select">
+                    <!-- DATE START-->
 
-                        <option>08:00 AM - 12:00 PM</option>
-                        <option>12:00 PM - 04:00 PM</option>
-                        <option>04:00 PM - 08:00 PM</option>
-                        <option>08:00 PM - 12:00 AM</option>
+                    <div class="mb-3">
 
-                    </select>
+                        <label class="form-label">
+                            Campaign Start Date
+                        </label>
 
-                </div>
+                        <input type="date"
+                               class="form-control"
+                                name="date_start">
 
-                <!-- CAMPAIGN DURATION -->
+                    </div>
 
-                <div class="mb-3">
 
-                    <label class="form-label">
-                        Campaign Duration
-                    </label>
+                    <!-- DATE END -->
 
-                    <input type="number"
-                           class="form-control"
-                           placeholder="Enter number of days">
+                    <div class="mb-3">
 
-                </div>
+                        <label class="form-label">
+                            Campaign End Date
+                        </label>
 
-                <!-- SUBMIT BUTTON -->
+                        <input type="date"
+                               class="form-control"
+                                name="date_end">
 
-                <button type="submit"
-                        class="btn btn-dark w-100">
+                    </div>
 
-                    Schedule Campaign
 
-                </button>
+                    <!-- TIME SLOT -->
 
-            </form>
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Time Slot
+                        </label>
+
+                        <select class="form-select" name="time">
+
+                            <option>08:00 AM - 10:00 AM</option>
+                            <option>12:00 PM - 02:00 PM</option>
+                            <option>04:00 PM - 06:00 PM</option>
+                            <option>08:00 PM - 10:00 PM</option>
+                            {% if subscription_plan == "Standard" or subscription_plan == "Premium" %}
+                            <option>10:00 AM - 12:00 PM</option>
+                            <option>02:00 PM - 04:00 PM</option>
+                            <option>06:00 PM - 08:00 PM</option>
+                            <option>10:00 PM - 12:00 AM</option>
+                            {% endif %}
+
+                            {% if subscription_plan == "Premium" %}
+                            <option>12:00 AM - 04:00 AM</option>
+                            <option>04:00 AM - 08:00 AM</option>
+                            <option>08:00 AM - 06:00 PM</option>
+                            {% endif %}
+                        </select>
+
+                    </div>
+
+
+
+                    <!-- SUBMIT BUTTON -->
+
+                    <button type="submit"
+                            class="btn btn-dark w-100">
+
+                        Schedule Campaign
+
+                    </button>
+
+                </form>
+
+            </div>
 
         </div>
-
-    </div>
-
+    </form>
 </div>
 
 <!-- Bootstrap JS -->
