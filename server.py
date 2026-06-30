@@ -676,15 +676,9 @@ def subscription():
     cursor.close()
 
     return render_template(
-
-        "subscription.html",
-
-        plan=user["subscription_plan"],
-
-        uploads=count["total"],
-
-        expiry=user["subscription_expiry"]
-
+    "subscription.html",
+    user=user,
+    uploads=count["total"]
     )
 
 
