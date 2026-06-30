@@ -91,6 +91,7 @@ from cryptography.fernet import Fernet
 #pip install pyotp
 #pip install pillow
 import pyotp, qrcode
+import stripe #pip install stripe
 
 
 #START: Code created by Christian
@@ -105,6 +106,7 @@ app.config['MYSQL_DB'] = os.getenv('MYSQL_DB')
 app.config['MYSQL_PORT'] = int(os.getenv('MYSQL_PORT'))
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 app.secret_key = os.getenv("SECRET_KEY") 
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 mysql = MySQL(app)
 
 #Used to create 2FA secret key
@@ -652,9 +654,9 @@ def subscription():
     # Get subscription details
 
     cursor.execute("""
-        SELECT
-            subscription_plan,
-            subscription_expiry
+        SELECT subscription_plan,
+               uploads_used,
+               subscription_expiry
         FROM users
         WHERE id=%s
     """, (user_id,))
@@ -723,6 +725,113 @@ def choose_plan(plan):
     flash(f"{plan} plan activated successfully!", "success")
 
     return redirect(url_for("dashboard"))
+
+
+
+
+#checkout session route
+@app.route("/create-checkout-session/<plan>")
+def create_checkout_session(plan):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    prices = {
+
+        "Basic": 3000,
+
+        "Standard": 7000,
+
+        "Premium": 15000
+
+    }
+
+    sessionStripe = stripe.checkout.Session.create(
+
+        payment_method_types=["card"],
+
+        line_items=[
+
+            {
+
+                "price_data": {
+
+                    "currency": "eur",
+
+                    "product_data": {
+
+                        "name": f"{plan} Subscription"
+
+                    },
+
+                    "unit_amount": prices[plan]
+
+                },
+
+                "quantity": 1
+
+            }
+
+        ],
+
+        mode="payment",
+
+        success_url=url_for(
+            "payment_success",
+            plan=plan,
+            _external=True
+        ),
+
+        cancel_url=url_for(
+            "subscription",
+            _external=True
+        )
+
+    )
+
+    return redirect(
+        sessionStripe.url,
+        code=303
+    )
+
+
+
+
+# Payment success route
+@app.route("/payment-success/<plan>")
+def payment_success(plan):
+
+    # Check if user is logged in
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    # Subscription expires in 30 days
+    expiry = datetime.now() + timedelta(days=30)
+
+    cursor = mysql.connection.cursor()
+
+    cursor.execute("""
+        UPDATE users
+        SET subscription_plan = %s,
+            subscription_expiry = %s
+        WHERE id = %s
+    """, (
+        plan,
+        expiry,
+        session["user_id"]
+    ))
+
+    mysql.connection.commit()
+
+    cursor.close()
+
+    flash(
+        f"{plan} plan activated successfully.",
+        "success"
+    )
+
+    return redirect(url_for("dashboard"))
+
 
 
 

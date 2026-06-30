@@ -82,87 +82,245 @@
   {% endif %}
 {% endwith %}
 
-<!-- CURRENT PLAN -->
+<div class="container mt-5">
 
-<div class="current-plan">
+    <!-- Current Subscription -->
 
-    <h3>
-        Current Plan:
-        {{ plan }}
-    </h3>
+    <div class="card shadow-lg border-0 mb-5">
 
-    <p>
-        Uploads Used:
-        {{ uploads }}
-    </p>
+        <div class="card-body">
 
-    <p>
-        Membership Expires:
-        {{ expiry }}
-    </p>
+            <div class="row text-center">
 
-</div>
+                <div class="col-md-4">
+                    <h5 class="text-muted">Current Plan</h5>
+                    <h3 class="text-primary fw-bold">
+                        {{ user.subscription_plan }}
+                    </h3>
+                </div>
 
-<!-- TITLE -->
-<div class="page-title">
-    <h1>Subscription Plans</h1>
-    <p>Choose the best plan for your business</p>
-</div>
+                <div class="col-md-4">
+                    <h5 class="text-muted">Uploads Used</h5>
+                    <h3 class="fw-bold">
+                        {{ user.uploads_used }}
+                    </h3>
+                </div>
 
-<!-- CARDS -->
-<div class="cards-container">
+                <div class="col-md-4">
 
-    <!-- BASIC -->
-    <div class="card">
-        <h2>Basic</h2>
-        <div class="price">€30</div>
+                    <h5 class="text-muted">Membership Status</h5>
 
-        <ul>
-            <li>1 Billboard Access</li>
-            <li>2 Upload Ads</li>
-            <li>Basic Scheduling</li>
-        </ul>
+                    {% if user.subscription_expiry %}
 
-        <a class="btn basic"
-           href="{{ url_for('choose_plan', plan='Basic') }}">
-            Choose Basic
-        </a>
+                        <h3 class="text-success fw-bold">
+                            ✅ Active
+                        </h3>
+
+                        <p class="mb-1">
+                            <strong>Plan:</strong>
+                            {{ user.subscription_plan }}
+                        </p>
+
+                        <p>
+                            <strong>Expires:</strong><br>
+                            {{ user.subscription_expiry.strftime('%d %B %Y') if user.subscription_expiry else user.subscription_expiry }}
+                        </p>
+
+                    {% else %}
+
+                        <h3 class="text-danger fw-bold">
+                            ❌ No Active Subscription
+                        </h3>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
     </div>
 
-    <!-- STANDARD -->
-    <div class="card">
-        <h2>Standard</h2>
-        <div class="price">€70</div>
 
-        <ul>
-            <li>3 Billboard Access</li>
-            <li>5 Uploads Ads</li>
-            <li>Analytics</li>
-        </ul>
+    <!-- Heading -->
 
-        <a class="btn standard"
-           href="{{ url_for('choose_plan', plan='Standard') }}">
-            Choose Standard
-        </a>
+    <div class="text-center mb-5">
+
+        <h1 class="fw-bold">
+            Subscription Plans
+        </h1>
+
+        <p class="text-muted">
+            Select the perfect plan for your business.
+        </p>
+
     </div>
 
-    <!-- PREMIUM -->
-    <div class="card">
-        <span class="badge">Most Popular</span>
 
-        <h2>Premium</h2>
-        <div class="price">€150</div>
+    <div class="row g-4">
 
-        <ul>
-            <li>Unlimited Uploads Ads</li>
-            <li>All Billboard Access</li>
-            <li>Advanced Analytics</li>
-        </ul>
+        <!-- BASIC -->
 
-        <a class="btn premium"
-           href="{{ url_for('choose_plan', plan='Premium') }}">
-            Choose Premium
-        </a>
+        <div class="col-lg-4">
+
+            <div class="card shadow h-100 border-primary">
+
+                <div class="card-header bg-primary text-white text-center">
+
+                    <h3>Basic</h3>
+
+                </div>
+
+                <div class="card-body text-center">
+
+                    <h1 class="display-5 fw-bold">
+                        €30
+                    </h1>
+
+                    <p class="text-muted">per month</p>
+
+                    <hr>
+
+                    <ul class="list-group list-group-flush">
+
+                        <li class="list-group-item">✔ 1 Billboard</li>
+
+                        <li class="list-group-item">✔ 2 Advertisement Uploads</li>
+
+                        <li class="list-group-item">✔ Basic Scheduling</li>
+
+                    </ul>
+
+                </div>
+
+                <div class="card-footer bg-white">
+
+                    <a href="{{ url_for('create_checkout_session', plan='Basic') }}"
+                       class="btn btn-primary btn-lg w-100">
+
+                        Choose Basic
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- STANDARD -->
+
+        <div class="col-lg-4">
+
+            <div class="card shadow-lg h-100 border-success">
+
+                <div class="card-header bg-success text-white text-center">
+
+                    <h3>Standard</h3>
+
+                </div>
+
+                <div class="card-body text-center">
+
+                    <h1 class="display-5 fw-bold">
+                        €70
+                    </h1>
+
+                    <p class="text-muted">per month</p>
+
+                    <hr>
+
+                    <ul class="list-group list-group-flush">
+
+                        <li class="list-group-item">✔ 3 Billboards</li>
+
+                        <li class="list-group-item">✔ 5 Advertisement Uploads</li>
+
+                        <li class="list-group-item">✔ Campaign Scheduling</li>
+
+                        <li class="list-group-item">✔ Analytics Dashboard</li>
+
+                        <li class="list-group-item">✔ Priority Support</li>
+
+                    </ul>
+
+                </div>
+
+                <div class="card-footer bg-white">
+
+                    <a href="{{ url_for('create_checkout_session', plan='Standard') }}"
+                       class="btn btn-success btn-lg w-100">
+
+                        Choose Standard
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- PREMIUM -->
+
+        <div class="col-lg-4">
+
+            <div class="card shadow-lg h-100 border-warning position-relative">
+
+                <span class="badge bg-danger position-absolute top-0 start-50 translate-middle px-4 py-2">
+                    MOST POPULAR
+                </span>
+
+                <div class="card-header bg-warning text-dark text-center">
+
+                    <h3>Premium</h3>
+
+                </div>
+
+                <div class="card-body text-center">
+
+                    <h1 class="display-5 fw-bold">
+                        €150
+                    </h1>
+
+                    <p class="text-muted">per month</p>
+
+                    <hr>
+
+                    <ul class="list-group list-group-flush">
+
+                        <li class="list-group-item">✔ Unlimited Billboards</li>
+
+                        <li class="list-group-item">✔ Unlimited Uploads</li>
+
+                        <li class="list-group-item">✔ Advanced Analytics</li>
+
+                        <li class="list-group-item">✔ Scheduling System</li>
+
+                        <li class="list-group-item">✔ 24/7 Premium Support</li>
+
+                    </ul>
+
+                </div>
+
+                <div class="card-footer bg-white">
+
+                    <a href="{{ url_for('create_checkout_session', plan='Premium') }}"
+                       class="btn btn-warning btn-lg w-100">
+
+                        Choose Premium
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
     </div>
 
 </div>
