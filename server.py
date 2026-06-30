@@ -539,7 +539,8 @@ def subscription():
 
     cursor.execute("""
         SELECT subscription_plan,
-               uploads_used
+               uploads_used,
+               subscription_expiry
         FROM users
         WHERE id=%s
     """, (session["user_id"],))
@@ -591,6 +592,113 @@ def choose_plan(plan):
     flash(f"{plan} plan activated successfully!", "success")
 
     return redirect(url_for("dashboard"))
+
+
+
+
+#checkout session route
+@app.route("/create-checkout-session/<plan>")
+def create_checkout_session(plan):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    prices = {
+
+        "Basic": 3000,
+
+        "Standard": 7000,
+
+        "Premium": 15000
+
+    }
+
+    sessionStripe = stripe.checkout.Session.create(
+
+        payment_method_types=["card"],
+
+        line_items=[
+
+            {
+
+                "price_data": {
+
+                    "currency": "eur",
+
+                    "product_data": {
+
+                        "name": f"{plan} Subscription"
+
+                    },
+
+                    "unit_amount": prices[plan]
+
+                },
+
+                "quantity": 1
+
+            }
+
+        ],
+
+        mode="payment",
+
+        success_url=url_for(
+            "payment_success",
+            plan=plan,
+            _external=True
+        ),
+
+        cancel_url=url_for(
+            "subscription",
+            _external=True
+        )
+
+    )
+
+    return redirect(
+        sessionStripe.url,
+        code=303
+    )
+
+
+
+
+# Payment success route
+@app.route("/payment-success/<plan>")
+def payment_success(plan):
+
+    # Check if user is logged in
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    # Subscription expires in 30 days
+    expiry = datetime.now() + timedelta(days=30)
+
+    cursor = mysql.connection.cursor()
+
+    cursor.execute("""
+        UPDATE users
+        SET subscription_plan = %s,
+            subscription_expiry = %s
+        WHERE id = %s
+    """, (
+        plan,
+        expiry,
+        session["user_id"]
+    ))
+
+    mysql.connection.commit()
+
+    cursor.close()
+
+    flash(
+        f"{plan} plan activated successfully.",
+        "success"
+    )
+
+    return redirect(url_for("dashboard"))
+
 
 
 

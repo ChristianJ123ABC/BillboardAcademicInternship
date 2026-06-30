@@ -23,98 +23,51 @@
 
 /*Start: style by prakash*/
 
-.flash-container {
-    width: 100%;
-    text-align: center;
-    margin-top: 15px;
+body{
+    background:#f5f7fb;
 }
 
-   /* ===== CUSTOM CARDS ONLY ===== */
+.card{
+    border-radius:18px;
+    transition:.3s;
+}
 
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f4f4f4;
-        }
+.card:hover{
+    transform:translateY(-8px);
+    box-shadow:0 18px 35px rgba(0,0,0,.15);
+}
 
-        .page-title {
-            text-align: center;
-            margin-top: 30px;
-        }
+.card-header{
+    border-radius:18px 18px 0 0 !important;
+}
 
-        .page-title p {
-            color: gray;
-        }
+.btn{
+    border-radius:10px;
+    font-weight:600;
+    transition:.3s;
+}
 
-        .current-plan {
-            text-align: center;
-            background: #e9ecef;
-            padding: 15px;
-            margin: 20px;
-            border-radius: 8px;
-        }
+.btn:hover{
+    transform:scale(1.04);
+}
 
-        /* CARD LAYOUT */
-        .cards-container {
-            width: 90%;
-            margin: auto;
-            display: flex;
-            justify-content: space-between;
-            gap: 20px;
-            flex-wrap: wrap;
-            margin-top: 30px;
-        }
+.display-5{
+    color:#222;
+}
 
-        .card {
-            background: white;
-            flex: 1;
-            min-width: 260px;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            text-align: center;
-            transition: 0.2s;
-        }
+.list-group-item{
+    border:none;
+    padding:14px;
+    font-size:16px;
+}
 
-        .card:hover {
-            transform: translateY(-5px);
-        }
+.badge{
+    font-size:14px;
+}
 
-        .price {
-            font-size: 34px;
-            margin: 15px 0;
-        }
-
-        ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        li {
-            margin: 10px 0;
-        }
-
-        /* BUTTONS */
-        .btn {
-            display: inline-block;
-            padding: 12px 18px;
-            margin-top: 15px;
-            color: white;
-            text-decoration: none;
-            border-radius: 6px;
-        }
-
-        .basic { background: #007bff; }
-        .standard { background: #28a745; }
-        .premium { background: #dc3545; }
-
-        .badge {
-            background: orange;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 12px;
-        }
-
+.navbar{
+    margin-bottom:25px;
+}
 
 /*
 .flash {
