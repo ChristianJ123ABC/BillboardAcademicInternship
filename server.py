@@ -29,6 +29,9 @@
 #Error Handling
 #https://flask.palletsprojects.com/en/stable/errorhandling/
 
+#Docker
+#https://www.geeksforgeeks.org/devops/what-is-docker-volume/
+
 #FUTURE NOTES: DOCKER ISSUES
 #PUT THIS SECTION IN THE DOCKERFILE TO ALLOW THE USER TO UPLOAD FILES VIA DOCKER
 
@@ -39,6 +42,12 @@
 # Switch to the non-privileged user to run the application.
 #USER appuser
 
+# Add a volumes section in the compose.yaml if you want an uploads folder to stay consistent / not change during build
+#  volumes:
+      #- volume_name: {filepath}
+#below outside services
+# volumes:
+    #volume_name:
 
 
 
@@ -620,7 +629,7 @@ def deleteFile(id):
 
     fileName = adFile['file'] 
     filePath = os.path.join(root,'static', fileName)
-    
+
     if os.path.exists(filePath):
         os.remove(filePath)
     else:
