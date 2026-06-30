@@ -619,10 +619,14 @@ def deleteFile(id):
     
 
     fileName = adFile['file'] 
-    
-
     filePath = os.path.join(root,'static', fileName)
-    os.remove(filePath)
+    
+    if os.path.exists(filePath):
+        os.remove(filePath)
+    else:
+        flash("File not found", "error")
+
+    
 
     cursor.execute("DELETE FROM advertisements WHERE advert_id = %s", (id,))
     mysql.connection.commit()
