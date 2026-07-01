@@ -35,7 +35,7 @@ form {
   text-align: center;
   font-size: 1.125rem;
   max-width: 555px;
-  margin: 20rem auto;
+  margin: 32rem auto;
   
 }
 
@@ -106,9 +106,9 @@ form button:hover {
        #232427 calc(30.769% + 1px), 
        #232427 38.462%, 
        #0e1323 calc(38.462% + 1px), 
-       #27282b 46.154%, 
-       #2b2c2f calc(46.154% + 1px), 
-       #2b2c2f 53.846%, 
+       #27282b 7.692%, 
+       #2b2c2f calc(7.692% + 1px), 
+       #27282b 17.692%, 
        #2f3033 calc(53.846% + 1px), 
        #2f3033 61.538%, 
        #323337 calc(61.538% + 1px), 
