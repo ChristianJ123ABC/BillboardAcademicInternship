@@ -46,8 +46,13 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 
 
 # Copy the source code into the container.
+WORKDIR /app
+
 COPY . .
 RUN mkdir -p /app/static/uploads && chown -R appuser:appuser /app/static/uploads
+
+# permissions (good practice)
+RUN chown -R appuser:appuser /app/static
 
 # Switch to the non-privileged user to run the application.
 USER appuser

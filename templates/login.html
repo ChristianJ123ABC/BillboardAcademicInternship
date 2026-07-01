@@ -1,40 +1,337 @@
-<!-- START: Code created by Christian-->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign in </title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Digital Billboard Login</title>
 
-    <!-- Links for the bootstrap and CSS file-->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../static/styles.css">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #0b1220;
+}
+
+/* MAIN LAYOUT */
+.wrapper {
+    display: flex;
+    height: 100vh;
+}
+
+/* LEFT SIDE WITH BILLBOARD IMAGE */
+.left {
+    flex: 2;
+    padding: 60px;
+    color: white;
+
+    /* BACKGROUND IMAGE */
+    background-image: url("/static/uploads/Background.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    position: relative;
+    overflow: hidden;
+
+    animation: bgZoom 25s infinite alternate ease-in-out;
+}
+
+/* DARK OVERLAY */
+.left::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    /* darker + cinematic gradient */
+    background: radial-gradient(
+        circle at 30% 40%,
+        rgba(0,0,0,0.2),
+        rgba(0,0,0,0.75)
+    );
+        z-index: 1;
+}
+
+/* CONTENT ABOVE IMAGE */
+.left-content {
+    position: relative;
+    z-index: 2;
+    max-width: 700px;
+}
+
+/* TITLE */
+.left-content h1 {
+    font-size: 52px;
+    font-weight: 900;
+    letter-spacing: 1px;
+
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 1s ease forwards;
+}
+
+/* SUBTEXT (if you use it) */
+.left-content p {
+    font-size: 16px;
+    opacity: 0.8;
+    margin-top: 10px;
+
+    animation: fadeInUp 1.2s ease forwards;
+}
+
+/* BILLBOARD IMAGE STRIP */
+.billboards {
+    margin-top: 50px;
+    display: flex;
+    gap: 25px;
+    position: relative;
+    z-index: 2;
+    flex-wrap: wrap;
+}
+
+/* BILLBOARD CARDS */
+.billboards img {
+    width: 240px;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 18px;
+
+    border: 1px solid rgba(255,255,255,0.25);
+    box-shadow: 0 20px 35px rgba(0,0,0,0.5);
+
+    transition: all 0.4s ease;
+
+    /* staggered floating animation */
+    animation: floatBillboard 5s ease-in-out infinite;
+}
+
+/* different delay for each image */
+.billboards img:nth-child(2) {
+    animation-delay: 0.5s;
+}
+
+.billboards img:nth-child(3) {
+    animation-delay: 1s;
+}
+
+.billboards img:nth-child(4) {
+    animation-delay: 1.5s;
+}
+
+/* HOVER EFFECT */
+.billboards img:hover {
+    transform: scale(1.12);
+    box-shadow: 0 30px 60px rgba(0,0,0,0.75);
+}
+
+/* RIGHT LOGIN PANEL */
+.right {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.03);
+    backdrop-filter: blur(12px);
+}
+
+/* LOGIN BOX */
+.login-box {
+    width: 360px;
+    padding: 30px;
+    border-radius: 18px;
+
+    background: rgba(20, 25, 40, 0.92);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+
+    color: white;
+
+    animation: fadeInUp 1s ease;
+}
+
+.login-box h2 {
+    font-weight: 800;
+    margin-bottom: 5px;
+}
+
+.login-box p {
+    font-size: 13px;
+    opacity: 0.7;
+}
+
+/* INPUT */
+.input {
+    width: 100%;
+    margin-top: 15px;
+    padding: 12px;
+
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.1);
+
+    background: rgba(255,255,255,0.05);
+    color: white;
+
+    transition: 0.3s;
+}
+
+.input:focus {
+    outline: none;
+    border-color: #a78bfa;
+    box-shadow: 0 0 10px rgba(167,139,250,0.3);
+}
+
+/* CHECK + LINKS */
+.row-flex {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    margin-top: 10px;
+    align-items: center;
+}
+
+.row-flex a {
+    color: #a78bfa;
+    text-decoration: none;
+}
+
+/* BUTTON */
+.btn-login {
+    width: 100%;
+    margin-top: 20px;
+    padding: 12px;
+
+    border: none;
+    border-radius: 12px;
+
+    font-weight: bold;
+    color: white;
+
+    background: linear-gradient(90deg, #6d28d9, #ec4899);
+    cursor: pointer;
+
+    transition: 0.3s;
+}
+
+.btn-login:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(236,72,153,0.3);
+}
+
+/* GOOGLE BUTTON */
+.google {
+    width: 100%;
+    margin-top: 12px;
+    padding: 10px;
+
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.2);
+
+    background: transparent;
+    color: white;
+
+    transition: 0.3s;
+}
+
+.google:hover {
+    border-color: #a78bfa;
+    transform: translateY(-2px);
+}
+
+/* ========== ANIMATIONS ========== */
+
+@keyframes floatBillboard {
+    0%   { transform: translateY(0px); }
+    50%  { transform: translateY(-12px); }
+    100% { transform: translateY(0px); }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes bgZoom {
+    from { background-size: 100%; }
+    to   { background-size: 115%; }
+}
+
+</style>
 </head>
+
 <body>
-    <!-- Div Class for flash messages to appear on screen-->
-    <div class = "flash">
-        {% with messages = get_flashed_messages(with_categories = true)%}
-        {% if messages%}
-            {% for category, message in messages%}
-            <div class = "{{ category }}"><h2>{{message}}</h2></div>
-            {%endfor%}
-            {%endif%}
-            {%endwith%}
+
+<div class="wrapper">
+
+    <!-- LEFT SIDE -->
+    <div class="left">
+
+        <div class="left-content">
+
+            <h1>Your Ads. Everywhere.</h1>
+            <p>Manage and schedule digital billboard ads across premium locations in real time.</p>
+
+            <!-- BILLBOARD PREVIEW IMAGES -->
+            <div class="billboards">
+
+                <img src="{{ url_for('static', filename='uploads/airport.jpg') }}" alt="Airport">
+                <img src="{{ url_for('static', filename='uploads/shopping_center.jpg') }}" alt="Mall">
+                <img src="{{ url_for('static', filename='uploads/train_station.jpg') }}" alt="Train Station">
+                <img src="{{ url_for('static', filename='uploads/city_center.jpg') }}" alt="Dublin City">
+
+            </div>
+
+        </div>
+
     </div>
 
-    <!-- Uses POST to check the user's login, and compare it to the database-->
-    <div class = "Signin">
-        <h1>Log in to your business account</h1>
-        <form method = "POST" action="{{ url_for('login') }}">
-            <input type = "email" name = "email" placeholder = "Email">
-            <input type = "password" name = "password" placeholder = "Password">
-            <button type = "submit">Sign in</button>
-        </form>
-        
-        Haven't created a business account yet? <a href="{{ url_for('register') }}">Register</a>
+    <!-- RIGHT LOGIN SIDE -->
+    <div class="right">
+
+        <div class="login-box">
+
+            <h2>Welcome Back</h2>
+            <p>Sign in to your business account</p>
+
+            <div class="flash">
+                {% with messages = get_flashed_messages(with_categories = true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+                {% endwith %}
+            </div>
+
+            <form method="POST" action="{{ url_for('login') }}">
+                <input class="input" type="email" name="email" placeholder="Email address" required>
+                <input class="input" type="password" name="password" placeholder="Password" required>
+
+                <div class="row-flex">
+                    <label><input type="checkbox"> Remember me</label>
+                    <a href="#">Forgot password?</a>
+                </div>
+
+                <button class="btn-login" type="submit">Sign In</button>
+            </form>
+
+            <button class="google">Sign in with Google</button>
+
+            <div style="text-align:center; margin-top:15px; font-size:12px;">
+                Don’t have an account? <a href="{{ url_for('register') }}" style="color:#a78bfa;">Register</a>
+            </div>
+
+        </div>
+
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</div>
+
 </body>
 </html>
-<!-- END: Code created by Christian-->
