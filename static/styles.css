@@ -19,8 +19,112 @@
 
 /*END: styling done by Christian
 
+#References:
+Upload Form 
+https://uiverse.io/Yaya12085/nasty-wolverine-41
+https://cssgradient.io/gradient-backgrounds/
+https://neumorphism.io/#e0e0e0
+/*START: styling done by Christian
+*/
+form {
+  background-color: #fff;
+  box-shadow: 0 10px 60px rgb(218, 229, 255);
+  border: 1px solid rgb(159, 159, 160);
+  border-radius: 20px;
+  padding: 2rem 0.7rem 0.7rem 0.7rem;
+  text-align: center;
+  font-size: 1.125rem;
+  max-width: 555px;
+  margin: 20rem auto;
+  
+}
+
+.form-paragraph {
+  margin-top: 10px;
+  font-size: 0.9375rem;
+  color: rgb(105, 105, 105);
+}
+
+form h3 {
+  color: #000;
+  font-size: 1.4rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+}
+
+form input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(8, 8, 8, 0.288);
+  outline: none;
+}
+
+form input[type="file"] {
+  width: 100%;
+  margin-top: 15px;
+  color: #444;
+  padding: 5px;
+  border-radius: 10px;
+  border: 1px solid rgba(8, 8, 8, 0.288);
+  background: #ffffff;
+  cursor: pointer;
+}
+
+form button {
+  margin-top: 20px;
+  width: 100%;
+  border: none;
+  background: #0e0f11;
+  padding: 10px 20px;
+  border-radius: 10px;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s ease-in-out;
+}
+
+form button:hover {
+  background: #0d45a5;
+}
 
 
+
+#uploadAd{
+    /* https://grabient.com/HQBgrAzANKAsAcMT0cAjLAnDNYDsOsATDEUSKWicGWlBMHmtA3kS8AGybShgVpQIAUIoggA?style=linearSwatches */
+
+    background: 
+    linear-gradient(90deg, 
+    #121216 0.000%,
+     #121216 7.692%, 
+     #16171a calc(7.692% + 1px),
+      #16171a 15.385%, 
+      #1a1b1f calc(15.385% + 1px), 
+      #1a1b1f 23.077%, 
+      #1f2023 calc(23.077% + 1px),
+       #1f2023 30.769%, 
+       #232427 calc(30.769% + 1px), 
+       #232427 38.462%, 
+       #0e1323 calc(38.462% + 1px), 
+       #27282b 46.154%, 
+       #2b2c2f calc(46.154% + 1px), 
+       #2b2c2f 53.846%, 
+       #2f3033 calc(53.846% + 1px), 
+       #2f3033 61.538%, 
+       #323337 calc(61.538% + 1px), 
+       #323337 69.231%, 
+       #36373a calc(69.231% + 1px), 
+       #36373a 76.923%, 
+       #38393d calc(76.923% + 1px), 
+       #38393d 84.615%, 
+       #3b3c40 calc(84.615% + 1px), 
+       #3b3c40 92.308%, 
+       #3d3e42 calc(92.308% + 1px) 100.000%);
+}
+
+
+
+/*END: styling done by Christian
 /*Start: style by prakash*/
 
 body{
