@@ -4,7 +4,7 @@
 /*Styling for Flash messages
 */
 .success { color: #28a745;  } 
-.error { color: #dc3545;  }
+.danger { color: #dc3545;  }
 .warning { color: #ffc107;  } 
 
 .flash{
@@ -20,7 +20,7 @@
 /*END: styling done by Christian
 
 #References:
-Upload Form 
+Upload Form(s)
 https://uiverse.io/Yaya12085/nasty-wolverine-41
 https://cssgradient.io/gradient-backgrounds/
 https://neumorphism.io/#e0e0e0
@@ -37,6 +37,15 @@ form {
   max-width: 555px;
   margin: 32rem auto;
   
+}
+
+#uploadScheduling{
+    margin: 15rem auto;
+
+}
+
+#scheduling{
+    color: white;
 }
 
 .form-paragraph {
@@ -90,7 +99,7 @@ form button:hover {
 
 
 
-#uploadAd{
+#uploadAd, #scheduling{
     /* https://grabient.com/HQBgrAzANKAsAcMT0cAjLAnDNYDsOsATDEUSKWicGWlBMHmtA3kS8AGybShgVpQIAUIoggA?style=linearSwatches */
 
     background: 
@@ -121,6 +130,10 @@ form button:hover {
        #3b3c40 92.308%, 
        #3d3e42 calc(92.308% + 1px) 100.000%);
 }
+
+
+
+
 
 /*Dashboard
 Reference: https://uiverse.io/aasisodiya/nasty-cat-19
@@ -174,12 +187,38 @@ Reference: https://uiverse.io/aasisodiya/nasty-cat-19
     height: 300px; 
 }
 
+#dashboard, #analytics, h1, h2, p{
+    color: white;
+}
+
+#subscription h1, p{
+    color: white;
+}
+
+/*Used to center text
+*/
+#center{
+    text-align: center;
+}
+
+
+
+
+
+/*2FA
+*/
+
+#twoFASetup{
+    margin: auto;
+    display: block;
+}
+
+
+
 /*END: styling done by Christian
 /*Start: style by prakash*/
 
-body{
-    background:#f5f7fb;
-}
+
 
 .card{
     border-radius:18px;
@@ -221,25 +260,13 @@ body{
 
 .navbar{
     margin-bottom:25px;
-}
+    /* https://grabient.com/HQVgDAjANKDMAcMwCYCcMDsA2MMvOlABYMZYtYYJVTgDTlgxUiojgJ51cmxEJeuAWBFQwQA?angle=135 */
+
+    background: linear-gradient(135deg, #ffc695 0.000%, #636676 50.000%, #001426 100.000%);
+    opacity: 80%;
+}   
 
 /*
-.flash {
-    padding: 12px;
-    margin: 10px auto;
-    width: 60%;
-    border-radius: 6px;
-    color: white;
-    font-weight: bold;
-}
-
-.success {
-    background: #28a745;
-}
-
-.error {
-    background: #dc3545;
-}
 
 
 /* End : style by prakash */

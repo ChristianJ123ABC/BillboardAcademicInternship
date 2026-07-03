@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 
-<body>
+<body style = "background-color: rgb(30, 29, 29);">
 
 <!-- NAVBAR -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow">
@@ -34,9 +34,7 @@
 
             <ul class="navbar-nav ms-auto">
 
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
-                </li>
+               
 
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('scheduling') }}">Scheduling</a>
@@ -151,7 +149,7 @@
             Subscription Plans
         </h1>
 
-        <p class="text-muted">
+        <p>
             Select the perfect plan for your business.
         </p>
 

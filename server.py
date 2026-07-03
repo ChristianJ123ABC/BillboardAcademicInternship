@@ -125,7 +125,7 @@ def handle_notfound_request(e):
 #User trys to upload a too large file
 @app.errorhandler(werkzeug.exceptions.RequestEntityTooLarge)
 def handle_file_too_large(e):
-    flash("File is too large", "error")
+    flash("File is too large", "danger")
     return redirect(url_for("uploadAdvertisement")), 413
 
 #Overall check incase something errors in the server
@@ -199,11 +199,11 @@ def register():
 
         #Validation checks for email
         if not validEmail(email):
-            flash("Invalid Email Format, use the following (email@domain.com / name.last@domain.co.uk)", "error")
+            flash("Invalid Email Format, use the following (email@domain.com / name.last@domain.co.uk)", "danger")
             return render_template("register.html", businessName = businessName, firstName = firstName, lastName = lastName, email = email) #Keeps the input fields the same except password
         
         elif existingEmail(email):
-            flash("Email is already registered", "error")
+            flash("Email is already registered", "danger")
             return render_template("register.html", businessName = businessName, firstName = firstName, lastName = lastName, email = email) 
 
         #Validation checks for passwords
@@ -256,7 +256,7 @@ def login():
 
         #Validation for form fields
         if not email or not password:
-            flash("Please enter email and password", "error")
+            flash("Please enter email and password", "danger")
             return render_template("login.html")
         
 
@@ -268,12 +268,12 @@ def login():
 
         #User not found
         if not user:
-            flash("Invalid Email Address", "error")
+            flash("Invalid Email Address", "danger")
             return render_template("login.html")
         
         #Invalid password
         elif not check_password_hash(user["hashed_password"], password):
-            flash("Incorrect password", "error")
+            flash("Incorrect password", "danger")
             return render_template("login.html")
         
         #If all login details are valid:
@@ -324,7 +324,7 @@ def login_2fa():
             return redirect(url_for("dashboard"))
         
         else:
-            flash("Invalid code.", "error")
+            flash("Invalid code.", "danger")
 
     return render_template("2fa_login.html")
 
@@ -340,7 +340,7 @@ def setup2FA():
 
     #Checks if the user already has 2FA enabled
     if user["2fa_enabled"] != 0:
-        flash("2FA is already enabled", "error")
+        flash("2FA is already enabled", "danger")
         return redirect(url_for("dashboard"))
         
     #Creates the user's 2FA secret code and stores it in their database to use for verification later on.
@@ -383,7 +383,7 @@ def verify_2fa():
     
     else:
         cursor.close()
-        flash("Invalid code. Try again.", "error")
+        flash("Invalid code. Try again.", "danger")
         return redirect(url_for("setup2FA"))
 
 @app.route("/disable2FA")
@@ -411,7 +411,7 @@ def deactivate2FA():
     
     else:
         cursor.close()
-        flash("Invalid code.", "error")
+        flash("Invalid code.", "danger")
 
     return redirect(url_for("disable2FA"))
 
@@ -422,7 +422,7 @@ def deactivate2FA():
 def dashboard():
     #Checks if user is logged in
     if "user_id" not in session:
-        flash("Please log in to access the dashboard", "error")
+        flash("Please log in to access the dashboard", "danger")
         return redirect(url_for("login"))
     
     else:
@@ -538,7 +538,7 @@ def uploadAdvertisement():
 
                 if user["subscription_expiry"] < datetime.now():
 
-                    flash("Your subscription has expired. Please renew your plan.", "error")
+                    flash("Your subscription has expired. Please renew your plan.", "danger")
 
                     cursor.close()
 
@@ -579,7 +579,7 @@ def uploadAdvertisement():
 
                 flash(
                     f"You have reached the upload limit for the {currentPlan} plan.",
-                    "error"
+                    "danger"
                 )
 
                 cursor.close()
@@ -592,15 +592,15 @@ def uploadAdvertisement():
             file = request.files['file']
              #No file selected
             if not file or file.filename == '':
-                flash("No file selected", "error")
+                flash("No file selected", "danger")
                 return redirect(url_for("uploadAdvertisement"))
             
             if not allowedFile(file.filename):
-                flash("Invalid image type, use the following image extensions: 'png', 'jpg', 'jpeg', 'mp4', 'mov', 'mkv' ", "error")
+                flash("Invalid image type, use the following image extensions: 'png', 'jpg', 'jpeg', 'mp4', 'mov', 'mkv' ", "danger")
                 return redirect(url_for("uploadAdvertisement"))
             
             if existingFile(file):
-                flash("File already exists", "error")
+                flash("File already exists", "danger")
                 return redirect(url_for("uploadAdvertisement"))
             
             
@@ -641,7 +641,7 @@ def deleteFile(id):
     if os.path.exists(filePath):
         os.remove(filePath)
     else:
-        flash("File not found", "error")
+        flash("File not found", "danger")
 
     
 
@@ -712,7 +712,7 @@ def choose_plan(plan):
     valid_plans = ["Basic", "Standard", "Premium"]
 
     if plan not in valid_plans:
-        flash("Invalid subscription plan", "error")
+        flash("Invalid subscription plan", "danger")
         return redirect(url_for("subscription"))
 
     start_date = datetime.now()

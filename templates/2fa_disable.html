@@ -19,7 +19,7 @@
 
 </head>
 
-<body>
+<body style = "background-color: rgb(30, 29, 29);">
 
     <!-- NAVBAR -->
 
@@ -50,14 +50,6 @@
 
                 <ul class="navbar-nav ms-auto">
 
-                    <!-- DASHBOARD -->
-
-                    <li class="nav-item">
-                        <a class="nav-link active"
-                        href="{{ url_for('dashboard') }}">
-                            Dashboard
-                        </a>
-                    </li>
 
                     <!-- SCHEDULING -->
 
@@ -135,7 +127,9 @@
     </div>
 
     <!-- Form Field for 2FA Disable -->
-     <h1>2FA DISABLE</h1>
+     <div id = "center">
+         <h1>DISABLE YOUR 2FA BY ENTERING THE CODE FROM YOUR AUTHENTICATOR</h1>
+     </div>
     <form method = "POST" action = "/disable2FA/deactivate">
         <input type = "text" name="code" placeholder="Enter Code: ">
         <button type = "submit">Disable 2FA</button>
