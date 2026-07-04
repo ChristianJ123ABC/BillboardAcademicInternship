@@ -61,10 +61,6 @@
   #   - .env
 
 
-#Stripe API keys
-#Secret key = sk_test_51QtHxkE9I53MxGEG7q4d6GghW7i88Wdb1ddzxsahEuswMEzNK1qW2EO3RWguhlwcEWOzZAyXl8SwsKSnwzP0Gln700uKNfydfi
-#Publish key = pk_test_51QtHxkE9I53MxGEGGlW18Yii7C5kQ70WVsj8fZCkHqk5U8MPND3NhLMp1ETOvIDYXeOdpkxbbTB91HiP51RH9dPv00C71btimR
-
 
 #Steps to run the server with docker:
 #1. Install docker desktop
