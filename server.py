@@ -874,7 +874,6 @@ def scheduling():
         subscription_plan = cursor.fetchone()["subscription_plan"]
 
         cursor.close()
-        print(advertisements)
         return render_template("scheduling.html", advertisements = advertisements, subscription_plan = subscription_plan)
 
     else:
