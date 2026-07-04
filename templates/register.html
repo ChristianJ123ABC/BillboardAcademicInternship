@@ -12,189 +12,189 @@
     <link rel="stylesheet" href="../static/styles.css">
 
 
-<style> 
-/* Register Page
-Refrence - https://getbootstrap.com/docs/5.3/layout/grid/
-         - https://getbootstrap.com/docs/5.3/forms/overview/
-         - https://uiverse.io/aasisodiya/nasty-cat-19
-         - https://www.tutorialspoint.com/article/how-to-add-a-login-form-to-an-image-using-html-and-css
-         - https://getbootstrap.com/docs/5.3/components/buttons/
-         */
+    <style> 
+    /* Register Page
+    Refrence - https://getbootstrap.com/docs/5.3/layout/grid/
+            - https://getbootstrap.com/docs/5.3/forms/overview/
+            - https://uiverse.io/aasisodiya/nasty-cat-19
+            - https://www.tutorialspoint.com/article/how-to-add-a-login-form-to-an-image-using-html-and-css
+            - https://getbootstrap.com/docs/5.3/components/buttons/
+            */
 
 
 
-html, body{
-    height: 100%;
-    margin:0;
-    padding:0;
-    font-family: Arial, Helvetica, sans-serif;
-}
+    html, body{
+        height: 100%;
+        margin:0;
+        padding:0;
+        font-family: Arial, Helvetica, sans-serif;
+    }
 
-/* Background image */
-.bg-background{
-    position:fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-    background:url("/static/uploads/train_station.jpg") center center/cover no-repeat;
-    z-index:-2;
-}
+    /* Background image */
+    .bg-background{
+        position:fixed;
+        top:0;
+        left:0;
+        width:100%;
+        height:100%;
+        background:url("/static/uploads/train_station.jpg") center center/cover no-repeat;
+        z-index:-2;
+    }
 
-/* Dark overlay for readable */
-.bg-overlay{
-    position:fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-    background:rgba(0,0,0,0.4);
-    z-index:-1;
-}
+    /* Dark overlay for readable */
+    .bg-overlay{
+        position:fixed;
+        top:0;
+        left:0;
+        width:100%;
+        height:100%;
+        background:rgba(0,0,0,0.4);
+        z-index:-1;
+    }
 
-/* Center the register form */
-.center-wrapper {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding-top: 30px;
-    padding-bottom: 30px;
-}
+    /* Center the register form */
+    .center-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding-top: 30px;
+        padding-bottom: 30px;
+    }
 
-/* Register card */
-.register-card {
-    max-width: 400px;
-    background: #fff;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-}
+    /* Register card */
+    .register-card {
+        max-width: 400px;
+        background: #fff;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
 
-.register-card h2{
-    text-align:center;
-    margin-bottom:6px;
-    color:#212529;
-}
+    .register-card h2{
+        text-align:center;
+        margin-bottom:6px;
+        color:#212529;
+    }
 
-.register-card p{
-    text-align:center;
-    color:#6c757d;
-    margin-bottom:12px;
-}
+    .register-card p{
+        text-align:center;
+        color:#6c757d;
+        margin-bottom:12px;
+    }
 
-.register-card .form-control{
-    height:40px;
-    border-radius:8px;
-    margin-bottom:10px;
-}
+    .register-card .form-control{
+        height:40px;
+        border-radius:8px;
+        margin-bottom:10px;
+    }
 
-form {
-  background-color: #fff;
-  box-shadow: 0 10px 60px rgb(218, 229, 255);
-  border: 1px solid rgb(159, 159, 160);
-  border-radius: 20px;
-  padding: 2rem 0.7rem 0.7rem 0.7rem;
-  text-align: center;
-  font-size: 1.125rem;
-  max-width: 555px;
-  margin: auto;
-  
-}
+    form {
+    background-color: #fff;
+    box-shadow: 0 10px 60px rgb(218, 229, 255);
+    border: 1px solid rgb(159, 159, 160);
+    border-radius: 20px;
+    padding: 2rem 0.7rem 0.7rem 0.7rem;
+    text-align: center;
+    font-size: 1.125rem;
+    max-width: 555px;
+    margin: auto;
+    
+    }
 
 
-.register-card .btn-primary{
-    width:100%;
-    height:40px;
-    border-radius:8px;
-}
+    .register-card .btn-primary{
+        width:100%;
+        height:40px;
+        border-radius:8px;
+    }
 
-.password-info{
-    font-size:14px;
-    color:#555;
-    margin-top:20px;
-}
+    .password-info{
+        font-size:14px;
+        color:#555;
+        margin-top:20px;
+    }
 
-.password-info ul{
-    padding-left:20px;
-}
+    .password-info ul{
+        padding-left:20px;
+    }
 
-.flash{
-    position:absolute;
-    top:20px;
-    left:50%;
-    transform:translateX(-50%);
-    width:500px;
-    z-index:1000;
-}
-</style>   
+    .flash{
+        position:absolute;
+        top:20px;
+        left:50%;
+        transform:translateX(-50%);
+        width:500px;
+        z-index:1000;
+    }
+    </style>   
 
 </head>
 <body>
 
-<!-- background image -->
-<div class="bg-background"></div>
+    <!-- background image -->
+    <div class="bg-background"></div>
 
-<!-- Dark overlay to make text easier to read -->
-<div class="bg-overlay"></div>
+    <!-- Dark overlay to make text easier to read -->
+    <div class="bg-overlay"></div>
 
-<!-- display flash messages -->
-<div class="container mt-3 position-absolute w-100">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }} text-center">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-</div>
-
-<!-- Center the register form on the page -->
-<div class="center-wrapper">
-
-    <div class="register-card">
-
-        <h2 class="text-center ">Create Business Account</h2>
-        <p class="text-center text-muted ">Fill in your details to create an account</p>
-
-
-        <!-- Register form  -->
-        <form method="POST" action="{{ url_for('register') }}">
-
-            <input type="text" name="businessName" placeholder="Business Name" class="form-control"
-                value="{{ request.form.get('businessName','') }}">
-
-            <div class="row">
-                <div class="col">
-                    <input type="text" name="firstName" placeholder="First Name" class="form-control"
-                        value="{{ request.form.get('firstName','') }}">
-                </div>
-                <div class="col">
-                    <input type="text" name="lastName" placeholder="Last Name" class="form-control"
-                        value="{{ request.form.get('lastName','') }}">
-                </div>
-            </div>
-
-            <input type="email" name="email" placeholder="Email" class="form-control"
-                value="{{ request.form.get('email','') }}">
-
-            <input type="password" name="password" placeholder="Password" class="form-control">
-
-            <button class="btn btn-primary w-100">Register</button>
-
-        </form>
-
-        <hr>
-
-        <p class="text-center">
-            Already have an account? <a href="{{ url_for('login') }}">Login</a>
-        </p>
-
+    <!-- display flash messages -->
+    <div class="container mt-3 position-absolute w-100">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} text-center">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
     </div>
 
-</div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Center the register form on the page -->
+    <div class="center-wrapper">
+
+        <div class="register-card">
+
+            <h2 class="text-center ">Create Business Account</h2>
+            <p class="text-center text-muted ">Fill in your details to create an account</p>
+
+
+            <!-- Register form  -->
+            <form method="POST" action="{{ url_for('register') }}">
+
+                <input type="text" name="businessName" placeholder="Business Name" class="form-control"
+                    value="{{ request.form.get('businessName','') }}">
+
+                <div class="row">
+                    <div class="col">
+                        <input type="text" name="firstName" placeholder="First Name" class="form-control"
+                            value="{{ request.form.get('firstName','') }}">
+                    </div>
+                    <div class="col">
+                        <input type="text" name="lastName" placeholder="Last Name" class="form-control"
+                            value="{{ request.form.get('lastName','') }}">
+                    </div>
+                </div>
+
+                <input type="email" name="email" placeholder="Email" class="form-control"
+                    value="{{ request.form.get('email','') }}">
+
+                <input type="password" name="password" placeholder="Password" class="form-control">
+
+                <button class="btn btn-primary w-100">Register</button>
+
+            </form>
+
+            <hr>
+
+            <p class="text-center">
+                Already have an account? <a href="{{ url_for('login') }}">Login</a>
+            </p>
+
+        </div>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>
