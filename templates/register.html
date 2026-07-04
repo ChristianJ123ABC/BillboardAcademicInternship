@@ -11,101 +11,133 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="../static/styles.css">
 
-<style>
-/* Full page reset */
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    overflow: hidden;
+
+<style> 
+/* Register Page
+Refrence - https://getbootstrap.com/docs/5.3/layout/grid/
+         - https://getbootstrap.com/docs/5.3/forms/overview/
+         - https://uiverse.io/aasisodiya/nasty-cat-19
+         - https://www.tutorialspoint.com/article/how-to-add-a-login-form-to-an-image-using-html-and-css
+         - https://getbootstrap.com/docs/5.3/components/buttons/
+         */
+
+
+
+html, body{
+    height: 100%;
+    margin:0;
+    padding:0;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
-/* ===== Animated Background Image ===== */
-.bg-animation {
-    position: fixed;
-    width: 100%;
-    height: 100%;
+/* Background image */
+.bg-background{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
     background:url("/static/uploads/train_station.jpg") center center/cover no-repeat;
-    animation: zoomMove 20s infinite alternate ease-in-out;
-    z-index: -3;
+    z-index:-2;
 }
 
-/* Zoom + slow movement effect */
-@keyframes zoomMove {
-    0% {
-        transform: scale(1) translate(0px, 0px);
-        filter: brightness(0.9);
-    }
-    100% {
-        transform: scale(1.1) translate(-20px, -10px);
-        filter: brightness(1.1);
-    }
+/* Dark overlay for readable */
+.bg-overlay{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.4);
+    z-index:-1;
 }
 
-/* Dark overlay for readability */
-.bg-overlay {
-    position: fixed;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.55);
-    z-index: -2;
-}
-
-/* Center container */
+/* Center the register form */
 .center-wrapper {
-    height: 100vh;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
+    padding-top: 30px;
+    padding-bottom: 30px;
 }
 
-/* Glassmorphism card (modern UI look) */
-.glass-card {
-    width: 420px;
-    padding: 30px;
-    border-radius: 16px;
-
-    background: rgba(255, 255, 255, 0.12);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: white;
-
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
+/* Register card */
+.register-card {
+    max-width: 400px;
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
 }
 
-/* Inputs styling */
-.glass-card input {
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
-    color: white;
+.register-card h2{
+    text-align:center;
+    margin-bottom:6px;
+    color:#212529;
 }
 
-.glass-card input::placeholder {
-    color: rgba(255, 255, 255, 0.7);
+.register-card p{
+    text-align:center;
+    color:#6c757d;
+    margin-bottom:12px;
 }
 
-/* Button */
-.glass-card .btn-primary {
-    background: linear-gradient(90deg, #4f46e5, #7c3aed);
-    border: none;
+.register-card .form-control{
+    height:40px;
+    border-radius:8px;
+    margin-bottom:10px;
 }
 
-.glass-card .btn-primary:hover {
-    opacity: 0.9;
-}    
-</style>    
+form {
+  background-color: #fff;
+  box-shadow: 0 10px 60px rgb(218, 229, 255);
+  border: 1px solid rgb(159, 159, 160);
+  border-radius: 20px;
+  padding: 2rem 0.7rem 0.7rem 0.7rem;
+  text-align: center;
+  font-size: 1.125rem;
+  max-width: 555px;
+  margin: auto;
+  
+}
+
+
+.register-card .btn-primary{
+    width:100%;
+    height:40px;
+    border-radius:8px;
+}
+
+.password-info{
+    font-size:14px;
+    color:#555;
+    margin-top:20px;
+}
+
+.password-info ul{
+    padding-left:20px;
+}
+
+.flash{
+    position:absolute;
+    top:20px;
+    left:50%;
+    transform:translateX(-50%);
+    width:500px;
+    z-index:1000;
+}
+</style>   
+
 </head>
-
 <body>
 
-<!-- Animated background layer -->
-<div class="bg-animation"></div>
+<!-- background image -->
+<div class="bg-background"></div>
 
-<!-- Dark overlay for readability -->
+<!-- Dark overlay to make text easier to read -->
 <div class="bg-overlay"></div>
 
-<!-- Flash messages -->
+<!-- display flash messages -->
 <div class="container mt-3 position-absolute w-100">
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -118,34 +150,36 @@ body {
     {% endwith %}
 </div>
 
-<!-- Center form -->
+<!-- Center the register form on the page -->
 <div class="center-wrapper">
 
-    <div class="glass-card">
+    <div class="register-card">
 
-        <h2 class="text-center mb-2">Create Business Account</h2>
-        <p class="text-center text-muted mb-4">Join and grow your business</p>
+        <h2 class="text-center ">Create Business Account</h2>
+        <p class="text-center text-muted ">Fill in your details to create an account</p>
 
+
+        <!-- Register form  -->
         <form method="POST" action="{{ url_for('register') }}">
 
-            <input type="text" name="businessName" placeholder="Business Name" class="form-control mb-3"
+            <input type="text" name="businessName" placeholder="Business Name" class="form-control"
                 value="{{ request.form.get('businessName','') }}">
 
             <div class="row">
                 <div class="col">
-                    <input type="text" name="firstName" placeholder="First Name" class="form-control mb-3"
+                    <input type="text" name="firstName" placeholder="First Name" class="form-control"
                         value="{{ request.form.get('firstName','') }}">
                 </div>
                 <div class="col">
-                    <input type="text" name="lastName" placeholder="Last Name" class="form-control mb-3"
+                    <input type="text" name="lastName" placeholder="Last Name" class="form-control"
                         value="{{ request.form.get('lastName','') }}">
                 </div>
             </div>
 
-            <input type="email" name="email" placeholder="Email" class="form-control mb-3"
+            <input type="email" name="email" placeholder="Email" class="form-control"
                 value="{{ request.form.get('email','') }}">
 
-            <input type="password" name="password" placeholder="Password" class="form-control mb-3">
+            <input type="password" name="password" placeholder="Password" class="form-control">
 
             <button class="btn btn-primary w-100">Register</button>
 
