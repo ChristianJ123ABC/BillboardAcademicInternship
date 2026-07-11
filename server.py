@@ -657,6 +657,10 @@ def deleteFile(id):
 
     cursor.execute("DELETE FROM advertisements WHERE advert_id = %s", (id,))
     mysql.connection.commit()
+
+    cursor.execute("DELETE FROM schedules WHERE advert_id = %s", (id,))
+    mysql.connection.commit()
+
     cursor.close()
     flash('File successfully deleted!', 'success')
 
