@@ -307,7 +307,17 @@
                                 <br>
                                 <a href="{{ url_for('removeSchedule', id=schedule.advert_id)}}" id="adDelete">Remove Schedule</a>
                             </h5>
+                            <!-- Checks in real time if the schedule is still available -->
+                            <br><br>
+                            {% if not schedule.date_end >= now %} <!-- if the date is not further from today, display inactive-->
+                                <p class="bg-danger" style="color: white; padding: 15px; font-weight: bold;">INACTIVE: PLEASE REMOVE SCHEDULE</p>
+                            {% else %}
+                                <p class="bg-success" style="color: yellow; padding: 15px; font-weight: bold;">ACTIVE</p>
+                            {% endif %}
+                            
                         {% endif %}
+                        
+                        
                     </div>
 
                 </div>

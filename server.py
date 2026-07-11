@@ -98,6 +98,8 @@ from cryptography.fernet import Fernet
 import pyotp, qrcode
 import stripe #pip install stripe
 
+from datetime import date
+
 
 #START: Code created by Christian
 #Used to access the Database 
@@ -489,7 +491,8 @@ def dashboard():
 
         count = cursor.fetchone()
 
-        cursor.close()
+        cursor.close()  
+        
 
         return render_template(
 
@@ -505,7 +508,13 @@ def dashboard():
 
             uploads=count["total"],
 
-            expiry=user["subscription_expiry"]
+            expiry=user["subscription_expiry"],
+
+            now=date.today()
+            
+            
+
+            
 
         )
         #End code: Prakash 
