@@ -300,7 +300,14 @@
                             <br>
                             <a href="{{ url_for('deleteFile', id=advertisement.advert_id)}}" id="adDelete">Delete</a>
                         </h5>
-
+                        
+                        <!-- Checks if schedule exists in order to put a delete button under it. Causes None object otherwise.-->
+                        {% if schedule %}
+                            <h5>
+                                <br>
+                                <a href="{{ url_for('removeSchedule', id=schedule.advert_id)}}" id="adDelete">Remove Schedule</a>
+                            </h5>
+                        {% endif %}
                     </div>
 
                 </div>

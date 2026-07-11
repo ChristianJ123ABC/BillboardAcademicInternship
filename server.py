@@ -167,6 +167,14 @@ def existingFile(file):
     cursor.close()
     return user
 
+def existingSchedule(advert_id):
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT * FROM schedules WHERE advert_id = %s", (advert_id,))
+    user = cursor.fetchone()
+    cursor.close()
+    return user
+
+
 
 def allowedFile(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -654,6 +662,25 @@ def deleteFile(id):
 
     return redirect(url_for("dashboard"))
 
+
+@app.route('/removeSchedule/<int:id>')
+def removeSchedule(id):        
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT id FROM schedules WHERE advert_id = %s", (id,))
+    scheduledAdFile = cursor.fetchone()
+
+    if not scheduledAdFile:
+        flash("You are trying to delete an advertisement that does not belong to you.", "warning")
+        return redirect((url_for("dashboard")))
+    
+
+    cursor.execute("DELETE FROM schedules WHERE advert_id = %s", (id,))
+    mysql.connection.commit()
+    cursor.close()
+    flash('Scheduled successfully removed!', 'success')
+
+    return redirect(url_for("dashboard"))
+
 #END: Code created by Christian
 
 
@@ -882,13 +909,29 @@ def scheduling():
             advert_id = int(request.form.get('advert_id'))
             location = request.form.get('location')
             time = request.form.get('time')
-            date_start = datetime.strptime(request.form.get('date_start'), "%Y-%m-%d").date()
-            date_end = datetime.strptime(request.form.get('date_end'), "%Y-%m-%d").date()
+
+            #Used so it would throw a flash message instead of an error page to the user.
+            date_start_string = request.form.get("date_start")
+            date_end_string = request.form.get("date_end")
+
+            if not date_start_string or not date_end_string:
+                flash("Make sure both dates are filled in before submitting.", "danger")
+                return redirect(url_for('scheduling'))
+            
+            if existingSchedule(advert_id):
+                flash("There is already a schedule for this advertisement. Please remove the current one before adding a new one.", "danger")
+                return redirect(url_for('scheduling'))
+            
+
+            date_start = datetime.strptime(date_start_string, "%Y-%m-%d").date()
+            date_end = datetime.strptime(date_end_string, "%Y-%m-%d").date()
+
             cursor = mysql.connection.cursor()
             cursor.execute("INSERT INTO schedules (advert_id, location, time, date_start, date_end) VALUES (%s, %s, %s, %s, %s)",
                            (advert_id, location, time, date_start, date_end ))
             mysql.connection.commit()
             cursor.close()
+            flash("Advertisement successfully scheduled!", "success")
             return redirect(url_for('scheduling'))
 
 
