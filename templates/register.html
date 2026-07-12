@@ -138,7 +138,7 @@
     <div class="bg-overlay"></div>
 
     <!-- display flash messages -->
-    <div class="container mt-3 position-absolute w-100">
+    <div class="container mt-3 ">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
@@ -149,7 +149,7 @@
             {% endif %}
         {% endwith %}
     </div>
-
+    <br>
     <!-- Center the register form on the page -->
     <div class="center-wrapper">
 
