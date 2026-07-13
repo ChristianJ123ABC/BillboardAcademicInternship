@@ -32,7 +32,7 @@ def client(app):
 
 #NORMAL FLOWS
 
-#Tests to see if an account is created successfully with the correct formats
+#UC1-1
 def test_create_user_account(client):
     response = client.post("/register", data={
         "firstName": "test",
@@ -53,7 +53,7 @@ def test_create_user_account(client):
 
 #EXCEPTION FLOWS
 
-#Tests to see if the email format is invalid
+#UC1-2
 def test_invalid_email_format(client):
     response = client.post("/register", data={
         "firstName": "test",
@@ -70,7 +70,7 @@ def test_invalid_email_format(client):
 
 
 
-#Tests to see if the email alreadys exists
+#UC1-3
 def test_already_existing_email(client):
     response = client.post("/register", data={
         "firstName": "test",
@@ -90,7 +90,7 @@ def test_already_existing_email(client):
 
 #INDIVIDUAL TESTS FOR PASSWORD COMPLEXITY
 
-#Tests to see if the password is missing a number
+#UC1-4
 def test_password_missing_number(client):
     response = client.post("/register", data={
         "firstName": "test",
@@ -107,7 +107,7 @@ def test_password_missing_number(client):
     
 
 
-#Tests to see if the password is missing a lowercase letter
+#UC1-5
 def test_password_missing_lowercase_letter(client):
     response = client.post("/register", data={
         "firstName": "test",
@@ -123,7 +123,7 @@ def test_password_missing_lowercase_letter(client):
     assert response.request.path == '/register'
 
 
-#Tests to see if the password is missing an uppercase letter
+#UC1-6
 def test_password_missing_uppercase_letter(client):
     response = client.post("/register", data={
         "firstName": "test",
@@ -139,7 +139,7 @@ def test_password_missing_uppercase_letter(client):
     assert response.request.path == '/register'
 
 
-#Tests to see if the password is missing a special character
+#UC1-7
 def test_password_missing_special_character(client):
     response = client.post("/register", data={
         "firstName": "test",
@@ -155,7 +155,7 @@ def test_password_missing_special_character(client):
     assert response.request.path == '/register'
 
 
-#Tests to see if the password is too long
+#UC1-8
 def test_password_length_too_long(client):
     response = client.post("/register", data={
         "firstName": "test",
@@ -171,7 +171,7 @@ def test_password_length_too_long(client):
     assert response.request.path == '/register'
 
 
-#Tests to see if the password is too short
+#UC1-9
 def test_password_length_too_short(client):
     response = client.post("/register", data={
         "firstName": "test",
