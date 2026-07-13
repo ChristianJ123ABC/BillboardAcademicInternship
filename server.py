@@ -285,14 +285,11 @@ def login():
         cursor.close()
 
         #User not found
-        if not user:
-            flash("Invalid Email Address", "danger")
+        if not user or not check_password_hash(user["hashed_password"], password):
+            flash("Invalid Email Address or Password. please try again.", "danger")
             return render_template("login.html")
         
-        #Invalid password
-        elif not check_password_hash(user["hashed_password"], password):
-            flash("Incorrect password", "danger")
-            return render_template("login.html")
+
         
         #If all login details are valid:
         else:
@@ -372,7 +369,7 @@ def setup2FA():
 
     #Uses their secret code to generate a QR Code to scan onto their phone and use a code to login to their account
     uri = pyotp.totp.TOTP(secret).provisioning_uri(
-        name=session["email"], issuer_name="Billboard Advertisement"
+        name=session["email"], issuer_name="Aerial Advertising"
     )
     img = qrcode.make(uri)
     buf = BytesIO()
@@ -925,13 +922,7 @@ def scheduling():
     else:
         if request.method == "POST":
             # Insert schedule into database
-            advert_id = int(request.form.get('advert_id'))
-            print(advert_id) 
-            print("here is the value)")
-            if advert_id == None:
-                flash("You must select an advertisement to schedule one.", "danger")
-                return redirect(url_for('scheduling'))
-            
+            advert_id = int(request.form.get('advert_id')) 
             location = request.form.get('location')
             time = request.form.get('time')
 
