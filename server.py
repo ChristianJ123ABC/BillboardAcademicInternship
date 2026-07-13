@@ -236,10 +236,16 @@ def register():
             flash("Password has to contain atleast 1 special character.")
             return render_template("register.html", businessName = businessName, firstName = firstName, lastName = lastName, email = email) 
 
-        elif len(password) < 10 or len(password) > 30:
-            flash("Password has to be between 10 and 30 characters.")
+        elif len(password) > 30:
+            flash("This password is too long, it must be between 10 and 30 characters.")
             return render_template("register.html", businessName = businessName, firstName = firstName, lastName = lastName, email = email) 
         
+        elif len(password) < 10:
+            flash("This password is too short, it must be between 10 and 30 characters.")
+            return render_template("register.html", businessName = businessName, firstName = firstName, lastName = lastName, email = email) 
+
+
+
         else:
             cursor = mysql.connection.cursor()
             cursor.execute("INSERT into users (email, hashed_password, firstName, lastName, businessName, 2fa_enabled) VALUES (%s, %s, %s, %s, %s,%s)", (email, hashedPass, firstName, lastName, businessName, 0)) #The 0 is used to set the 2FA to disabled on a new account
