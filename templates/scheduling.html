@@ -163,8 +163,8 @@
                             Select Advertisement
                         </label>
 
-                        <select class="form-select" name="advert_id">
-
+                        <select class="form-select" name="advert_id" required>
+                            
                             {% for advertisement in advertisements %}
                             <option value= "{{ advertisement.advert_id }}" > {{ advertisement.caption }} </option>
                             {% endfor %}
@@ -266,10 +266,11 @@
 
 
                     <!-- SUBMIT BUTTON -->
+                    
 
                     <button type="submit"
                             class="btn btn-dark w-100">
-
+                            
                         Schedule Campaign
 
                     </button>

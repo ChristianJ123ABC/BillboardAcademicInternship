@@ -926,6 +926,12 @@ def scheduling():
         if request.method == "POST":
             # Insert schedule into database
             advert_id = int(request.form.get('advert_id'))
+            print(advert_id) 
+            print("here is the value)")
+            if advert_id == None:
+                flash("You must select an advertisement to schedule one.", "danger")
+                return redirect(url_for('scheduling'))
+            
             location = request.form.get('location')
             time = request.form.get('time')
 
@@ -940,6 +946,9 @@ def scheduling():
             if existingSchedule(advert_id):
                 flash("There is already a schedule for this advertisement. Please remove the current one before adding a new one.", "danger")
                 return redirect(url_for('scheduling'))
+            
+            
+                
             
 
             date_start = datetime.strptime(date_start_string, "%Y-%m-%d").date()

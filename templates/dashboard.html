@@ -203,10 +203,16 @@
 
                 <div class="card shadow-sm border-0 text-center p-3">
 
-                    <h5>Billboards</h5>
+                    <h5>Billboards Available</h5>
 
                     <h2 class="fw-bold text-success">
-                        12
+                        {% if plan == "basic" %}
+                            {{ 2 - (advertisements|length) }}
+                        {% elif plan == "standard" %}
+                            {{ 3 - (advertisements|length) }}
+                        {% elif plan == "premium" %}
+                            Unlimited
+                        {% endif %}
                     </h2>
 
                 </div>
