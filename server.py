@@ -272,10 +272,7 @@ def login():
         email = request.form["email"]
         password = request.form["password"]
 
-        #Validation for form fields
-        if not email or not password:
-            flash("Please enter email and password", "danger")
-            return render_template("login.html")
+        
         
 
         #Search for user
