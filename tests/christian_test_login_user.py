@@ -27,7 +27,7 @@ def client(app):
 
 
 #NORMAL FLOWS
-#Tests to see if the user is logged into the dashboard
+#UC2-1
 def test_login_user(client):
     response = client.post("/login", data={
         "email": "fake123@gmail.com",
@@ -40,7 +40,7 @@ def test_login_user(client):
 
 
 #ALTERNATE FLOWS
-#Tests to see if the user is redirected to the 2FA screen when it is enabled
+#UC2-2
 def test_login_redirects_user_to_2fa(client):
     response = client.post("/login", data={
         "email": "2FAenabled@gmail.com", #Account with 2FA Enabled
@@ -52,7 +52,7 @@ def test_login_redirects_user_to_2fa(client):
     assert response.request.path == '/login/2fa'
 
 @pytest.mark.xfail(reason="impossible to use the same TOTP code")
-#Given the code is correct, the user should be logged into once the TOTP is valid.
+#UC2-3
 def test_login_TOTP_valid(client):
     with client.session_transaction() as session: #Provides session data to bypass certain pages
         session["pending_user_id"] = 14
@@ -72,7 +72,7 @@ def test_login_TOTP_valid(client):
 
 
 #EXCEPTION FLOWS
-#Tests if the users password is wrong.
+#UC2-4
 def test_login_password_invalid(client):
     response = client.post("/login", data={
         "email": "fake123@gmail.com",
@@ -83,9 +83,9 @@ def test_login_password_invalid(client):
     assert response.status_code == 200
     assert b"Invalid Email Address or Password. please try again." in response.data
 
-
+#UC2-5
 def test_login_email_invalid(client):
-#Same test result as above except wrong email
+
     response = client.post("/login", data={
         "email": "wrongemail@gmail.com",
         "password": "bla!Ammznss$442f4"
@@ -95,8 +95,9 @@ def test_login_email_invalid(client):
     assert response.status_code == 200
     assert b"Invalid Email Address or Password. please try again." in response.data
 
+#UC2-6
 def test_login_TOTP_invalid(client):
-#Tests to see if the TOTP 2FA code is invalid
+
     with client.session_transaction() as session: #Provides session data to bypass certain pages
         session["pending_user_id"] = 14
         session["pending_firstName"] = "2FA"
