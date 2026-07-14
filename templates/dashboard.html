@@ -208,9 +208,9 @@
                     <h2 class="fw-bold text-success">
                         {% if plan == "basic" %}
                             {{ 2 - (advertisements|length) }}
-                        {% elif plan == "standard" %}
+                        {% elif plan == "Standard" %}
                             {{ 3 - (advertisements|length) }}
-                        {% elif plan == "premium" %}
+                        {% elif plan == "Premium" %}
                             Unlimited
                         {% endif %}
                     </h2>
@@ -229,7 +229,7 @@
                     <h5>Total Views</h5>
 
                     <h2 class="fw-bold text-danger">
-                        25K
+                        {{ total_views }}K
                     </h2>
 
                 </div>

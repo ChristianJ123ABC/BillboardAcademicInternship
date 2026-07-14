@@ -499,7 +499,11 @@ def dashboard():
         WHERE advertisements.user_id = %s""", (user_id,))
         used_billboards_dash = cursor.fetchone()["total"]
 
-
+        cursor.execute("""SELECT SUM(advertisements.views) 
+        AS "total_views"
+        FROM advertisements
+        WHERE advertisements.user_id = %s""", (user_id,))
+        total_views = cursor.fetchone()["total_views"]
         cursor.close()  
         
 
@@ -520,6 +524,8 @@ def dashboard():
             uploads=count["total"],
 
             expiry=user["subscription_expiry"],
+
+            total_views=total_views,
 
             now=date.today()
         )
