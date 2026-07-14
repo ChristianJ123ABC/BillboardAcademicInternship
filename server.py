@@ -1000,6 +1000,13 @@ def analytics():
     ON schedules.advert_id=advertisements.advert_id 
     WHERE advertisements.user_id = %s""", (user_id,))
     used_billboards = cursor.fetchone()["total"]
+
+    cursor.execute("""SELECT SUM(advertisements.views) 
+    AS "total_views"
+    FROM advertisements
+    WHERE advertisements.user_id = %s""", (user_id,))
+    total_views = cursor.fetchone()["total_views"]
+     
     cursor.close()
 
     return render_template(
@@ -1007,7 +1014,7 @@ def analytics():
             campcount = campcount,
             used_billboards = used_billboards,
             active_campaigns_count = active_campaigns_count,
-            campaigns = campaigns
+            campaigns = campaigns, total_views = total_views
 
 
     )
