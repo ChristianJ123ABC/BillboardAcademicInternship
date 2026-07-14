@@ -99,6 +99,7 @@ import pyotp, qrcode
 import stripe #pip install stripe
 
 from datetime import date
+from random import randrange
 
 
 #START: Code created by Christian
@@ -491,6 +492,14 @@ def dashboard():
 
         count = cursor.fetchone()
 
+        cursor.execute("""SELECT COUNT(DISTINCT location) AS total
+        FROM schedules
+        INNER JOIN advertisements  
+        ON schedules.advert_id=advertisements.advert_id 
+        WHERE advertisements.user_id = %s""", (user_id,))
+        used_billboards_dash = cursor.fetchone()["total"]
+
+
         cursor.close()  
         
 
@@ -502,6 +511,8 @@ def dashboard():
 
             advertisements=advertisements,
 
+            used_billboards_dash=used_billboards_dash,
+
             check2FA=user["2fa_enabled"],
 
             plan=user["subscription_plan"],
@@ -511,11 +522,6 @@ def dashboard():
             expiry=user["subscription_expiry"],
 
             now=date.today()
-            
-            
-
-            
-
         )
         #End code: Prakash 
 
@@ -633,7 +639,8 @@ def uploadAdvertisement():
             #Insert image into database
             cursor = mysql.connection.cursor()
             caption = request.form.get('caption')
-            cursor.execute("INSERT INTO advertisements (file, caption, user_id) VALUES (%s, %s,%s)", (uploadFilePath, caption, user_id))
+            views = randrange(2, 99)
+            cursor.execute("INSERT INTO advertisements (file, caption, user_id, views) VALUES (%s, %s, %s, %s)", (uploadFilePath, caption, user_id, views))
             mysql.connection.commit()
             cursor.close()
             
@@ -947,17 +954,55 @@ def scheduling():
             flash("Advertisement successfully scheduled!", "success")
             return redirect(url_for('scheduling'))
 
+#END: Code created by Prakash
 
 
 # ANALYTICS ROUTE
 
 @app.route("/analytics")
 def analytics():
+    user_id = (session["user_id"])
+    cursor = mysql.connection.cursor()
+    cursor.execute("""SELECT schedules.location, schedules.advert_id, advertisements.caption 
+    FROM schedules
+    INNER JOIN advertisements  
+    ON schedules.advert_id=advertisements.advert_id WHERE advertisements.user_id = %s 
+    AND CURRENT_DATE()>=date_start 
+    AND CURRENT_DATE()<=date_end""", (user_id,))
+    active_campaigns = cursor.fetchall()
+    active_campaigns_count = len(active_campaigns)
 
-    return render_template("analytics.html")        
-       
+    cursor.execute("""SELECT schedules.location, schedules.advert_id, advertisements.caption, advertisements.views,
+    CASE  
+    WHEN CURRENT_DATE()<date_start THEN "pending"
+    WHEN CURRENT_DATE()>date_end THEN "inactive"
+    ELSE "active"  
+    END AS "status"
+    FROM schedules
+    INNER JOIN advertisements  
+    ON schedules.advert_id=advertisements.advert_id 
+    WHERE advertisements.user_id = %s""", (user_id,))
+    campaigns = (cursor.fetchall())
+    campcount = len(campaigns)
 
-#END: Code created by Prakash       
+    cursor.execute("""SELECT COUNT(DISTINCT location) AS total
+    FROM schedules
+    INNER JOIN advertisements  
+    ON schedules.advert_id=advertisements.advert_id 
+    WHERE advertisements.user_id = %s""", (user_id,))
+    used_billboards = cursor.fetchone()["total"]
+    cursor.close()
+
+    return render_template(
+            "analytics.html",
+            campcount = campcount,
+            used_billboards = used_billboards,
+            active_campaigns_count = active_campaigns_count,
+            campaigns = campaigns
+
+
+    )
+
 
 
 

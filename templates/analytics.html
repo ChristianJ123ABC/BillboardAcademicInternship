@@ -174,7 +174,7 @@
                     <h5>Active Campaigns</h5>
 
                     <h2 class="fw-bold text-success">
-                        12
+                        {{active_campaigns_count}}
                     </h2>
 
                 </div>
@@ -206,7 +206,7 @@
                     <h5>Billboards Used</h5>
 
                     <h2 class="fw-bold text-danger">
-                        8
+                        {{used_billboards}}
                     </h2>
 
                 </div>
@@ -241,49 +241,33 @@
                     </thead>
 
                     <tbody>
-
+                    {% for campaign in campaigns %}
                         <tr>
 
-                            <td>Summer Sale</td>
-                            <td>Dublin City</td>
-                            <td>12K</td>
+                            <td>{{ campaign.caption }}</td>
+                            <td>{{ campaign.location }}</td>
+                            <td>{{ campaign.views }}K</td>
 
                             <td>
-                                <span class="badge bg-success">
-                                    Active
-                                </span>
+                                {% if campaign.status == "active" %}
+                                    <span class="badge bg-success">
+                                        Active
+                                    </span>
+
+                                {% elif campaign.status == "pending" %}
+                                    <span class="badge bg-warning">
+                                        Pending
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-danger">
+                                        Inactive
+                                    </span>
+                                {% endif %}
                             </td>
 
                         </tr>
 
-                        <tr>
-
-                            <td>Restaurant Promo</td>
-                            <td>Shopping Mall</td>
-                            <td>7K</td>
-
-                            <td>
-                                <span class="badge bg-warning">
-                                    Pending
-                                </span>
-                            </td>
-
-                        </tr>
-
-                        <tr>
-
-                            <td>Gym Membership</td>
-                            <td>Airport Road</td>
-                            <td>6K</td>
-
-                            <td>
-                                <span class="badge bg-danger">
-                                    Paused
-                                </span>
-                            </td>
-
-                        </tr>
-
+                    {% endfor %}
                     </tbody>
 
                 </table>
