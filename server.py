@@ -237,10 +237,16 @@ def register():
             flash("Password has to contain atleast 1 special character.")
             return render_template("register.html", businessName = businessName, firstName = firstName, lastName = lastName, email = email) 
 
-        elif len(password) < 10 or len(password) > 30:
-            flash("Password has to be between 10 and 30 characters.")
+        elif len(password) > 30:
+            flash("This password is too long, it must be between 10 and 30 characters.")
             return render_template("register.html", businessName = businessName, firstName = firstName, lastName = lastName, email = email) 
         
+        elif len(password) < 10:
+            flash("This password is too short, it must be between 10 and 30 characters.")
+            return render_template("register.html", businessName = businessName, firstName = firstName, lastName = lastName, email = email) 
+
+
+
         else:
             cursor = mysql.connection.cursor()
             cursor.execute("INSERT into users (email, hashed_password, firstName, lastName, businessName, 2fa_enabled) VALUES (%s, %s, %s, %s, %s,%s)", (email, hashedPass, firstName, lastName, businessName, 0)) #The 0 is used to set the 2FA to disabled on a new account
@@ -267,10 +273,7 @@ def login():
         email = request.form["email"]
         password = request.form["password"]
 
-        #Validation for form fields
-        if not email or not password:
-            flash("Please enter email and password", "danger")
-            return render_template("login.html")
+        
         
 
         #Search for user
@@ -280,14 +283,11 @@ def login():
         cursor.close()
 
         #User not found
-        if not user:
-            flash("Invalid Email Address", "danger")
+        if not user or not check_password_hash(user["hashed_password"], password):
+            flash("Invalid Email Address or Password. please try again.", "danger")
             return render_template("login.html")
         
-        #Invalid password
-        elif not check_password_hash(user["hashed_password"], password):
-            flash("Incorrect password", "danger")
-            return render_template("login.html")
+
         
         #If all login details are valid:
         else:
@@ -367,7 +367,7 @@ def setup2FA():
 
     #Uses their secret code to generate a QR Code to scan onto their phone and use a code to login to their account
     uri = pyotp.totp.TOTP(secret).provisioning_uri(
-        name=session["email"], issuer_name="Billboard Advertisement"
+        name=session["email"], issuer_name="Aerial Advertising"
     )
     img = qrcode.make(uri)
     buf = BytesIO()
@@ -926,7 +926,7 @@ def scheduling():
     else:
         if request.method == "POST":
             # Insert schedule into database
-            advert_id = int(request.form.get('advert_id'))
+            advert_id = int(request.form.get('advert_id')) 
             location = request.form.get('location')
             time = request.form.get('time')
 
@@ -941,6 +941,9 @@ def scheduling():
             if existingSchedule(advert_id):
                 flash("There is already a schedule for this advertisement. Please remove the current one before adding a new one.", "danger")
                 return redirect(url_for('scheduling'))
+            
+            
+                
             
 
             date_start = datetime.strptime(date_start_string, "%Y-%m-%d").date()
