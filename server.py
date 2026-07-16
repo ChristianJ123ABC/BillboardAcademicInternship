@@ -113,7 +113,7 @@ app.config['MYSQL_PASSWORD'] = os.getenv('MYSQL_PASSWORD')
 app.config['MYSQL_DB'] = os.getenv('MYSQL_DB')
 app.config['MYSQL_PORT'] = int(os.getenv('MYSQL_PORT'))
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
-app.config["MYSQL_CHARSET"] = "utf8mb4" #ALWAYS USE: Used to make files compatible when comparing to existing ones. (existingFile function)
+app.config["MYSQL_CHARSET"] = os.getenv("MYSQL_CHARSET") #ALWAYS USE: Used to make files compatible when comparing to existing ones. (existingFile function)
 app.secret_key = os.getenv("SECRET_KEY") 
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 mysql = MySQL(app)
@@ -212,7 +212,7 @@ def register():
         password = request.form["password"]
         businessName = request.form["businessName"]
         hashedPass = generate_password_hash(password)
-
+        subscription_plan = "New"
         #Validation checks for email
         if not validEmail(email):
             flash("Invalid Email Format, use the following (email@domain.com / name.last@domain.co.uk)", "danger")
@@ -252,7 +252,7 @@ def register():
 
         else:
             cursor = mysql.connection.cursor()
-            cursor.execute("INSERT into users (email, hashed_password, firstName, lastName, businessName, 2fa_enabled) VALUES (%s, %s, %s, %s, %s,%s)", (email, hashedPass, firstName, lastName, businessName, 0)) #The 0 is used to set the 2FA to disabled on a new account
+            cursor.execute("INSERT into users (email, hashed_password, firstName, lastName, businessName, 2fa_enabled, subscription_plan) VALUES (%s, %s, %s, %s, %s,%s,%s)", (email, hashedPass, firstName, lastName, businessName, 0, subscription_plan)) #The 0 is used to set the 2FA to disabled on a new account
             mysql.connection.commit()
 
             flash(("Account Created Successfully!"), "success")
@@ -309,6 +309,7 @@ def login():
             session["lastName"] = user["lastName"]
             session["businessName"]  = user["businessName"]
             session["email"] = user["email"]
+            session["subscription_plan"] = user["subscription_plan"]
             
             flash("Login Successful!", "success")
             return redirect(url_for("dashboard"))
@@ -336,6 +337,7 @@ def login_2fa():
             session["lastName"] = session.pop("pending_lastName")
             session["businessName"] = session.pop("pending_businessName")
             session["email"] = session.pop("pending_email")
+            session["subscription_plan"] = user["subscription_plan"]
             flash("Login Successful!", "success")
             return redirect(url_for("dashboard"))
         
@@ -539,10 +541,13 @@ def dashboard():
 #Page for users to display their advertisments
 @app.route("/uploadAdvertisement", methods = ["GET", "POST"])
 def uploadAdvertisement():
-
+    if session["subscription_plan"] == "New":
+        flash("You are not subscribed to any plan. You must be subscribed to upload an advertisement. ", "danger")
+        return redirect(url_for("dashboard"))
     
     if request.method == "GET":
         return render_template("uploadAdvertisement.html")
+    
 
     #Validation for files
     else:
@@ -915,7 +920,10 @@ def payment_success(plan):
 
 @app.route("/scheduling", methods = ["GET", "POST"])
 def scheduling():
-
+    if session["subscription_plan"] == "New":
+        flash("You are not subscribed to any plan. You must be subscribed to schedule an advertisement. ", "danger")
+        return redirect(url_for("dashboard"))
+    
     if request.method == "GET":
         cursor = mysql.connection.cursor()
 
