@@ -627,7 +627,7 @@ def uploadAdvertisement():
                 return redirect(url_for("uploadAdvertisement"))
             
             if not allowedFile(file.filename):
-                flash("Invalid image type, use the following image extensions: 'png', 'jpg', 'jpeg', 'mp4', 'mov', 'mkv' ", "danger")
+                flash("Invalid file type, use the following file extensions: 'png', 'jpg', 'jpeg', 'mp4', 'mov', 'mkv' ", "danger")
                 return redirect(url_for("uploadAdvertisement"))
             
             if existingFile(file):
@@ -642,7 +642,7 @@ def uploadAdvertisement():
             file.save(filepath)
             uploadFilePath = os.path.join('uploads', file.filename)
 
-            #Insert image into database
+            #Insert file into database
             cursor = mysql.connection.cursor()
             caption = request.form.get('caption')
             views = randrange(2, 99)
@@ -650,7 +650,7 @@ def uploadAdvertisement():
             mysql.connection.commit()
             cursor.close()
             
-            flash("Image uploaded successfully", 'success')
+            flash("File uploaded successfully", 'success')
             return redirect(url_for('uploadAdvertisement'))
     
 #Used to remove a user's advertisement if they so please

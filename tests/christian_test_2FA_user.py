@@ -66,7 +66,7 @@ def test_enable_2fa(client):
 def test_disable_2fa(client):
     with client.session_transaction() as session:
         session["user_id"] = 14
-        session["email"] = "2FAenabled@gmail.com"
+        session["email"] = "2FAenabled@gmail.com" #Account with 2FA Enabled
         session["2fa_secret"] = "gAAAAABqVRvNAC_8ZbFC_GouvHK0pngoSFOAs2GGn2cxGfCz4E2CWxvUK4Gqx9UjljiqQYQ0h1ij5o-MMW5DTZNoiC9Ic9m2kQBg3SnWGofISKNmUWU-KwGiS8yYcRfVyef9dTn-s5L_"
 
     response = client.post("/disable2FA/deactivate", data={
