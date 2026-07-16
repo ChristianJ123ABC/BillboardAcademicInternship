@@ -613,7 +613,7 @@ def uploadAdvertisement():
             uploadLimit = limits.get(currentPlan, 0)
 
             #Prevent uploads if limit reached
-            if uploadsUsed >= uploadLimit:
+            if uploadsUsed > uploadLimit:
 
 
                 flash(
@@ -630,12 +630,12 @@ def uploadAdvertisement():
 
             file = request.files['file']
              #No file selected
-            if not file or file.filename == '':
+            if not file or file.filename == ' ':
                 flash("No file selected", "danger")
                 return redirect(url_for("uploadAdvertisement"))
             
             if not allowedFile(file.filename):
-                flash("Invalid file type, use the following file extensions: 'png', 'jpg', 'jpeg', 'mp4', 'mov', 'mkv' ", "danger")
+                flash("Invalid file type, use the following file extensions: png, jpg, jpeg, mp4, mov, mkv", "danger")
                 return redirect(url_for("uploadAdvertisement"))
             
             
@@ -669,7 +669,7 @@ def deleteFile(id):
     root = os.path.dirname(os.path.abspath(__file__))
         
     cursor = mysql.connection.cursor()
-    cursor.execute("SELECT file FROM advertisements WHERE advert_id = %s", (id,))
+    cursor.execute("SELECT file FROM advertisements WHERE advert_id = %s AND user_id = %s", (id,session["user_id"]))
     adFile = cursor.fetchone()
 
     if not adFile:
@@ -921,7 +921,7 @@ def payment_success(plan):
 @app.route("/scheduling", methods = ["GET", "POST"])
 def scheduling():
     if session["subscription_plan"] == "New":
-        flash("You are not subscribed to any plan. You must be subscribed to schedule an advertisement. ", "danger")
+        flash("You are not subscribed to any plan. You must be subscribed to schedule an advertisement.", "danger")
         return redirect(url_for("dashboard"))
     
     if request.method == "GET":
