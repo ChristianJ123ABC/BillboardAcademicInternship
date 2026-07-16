@@ -113,6 +113,7 @@ app.config['MYSQL_PASSWORD'] = os.getenv('MYSQL_PASSWORD')
 app.config['MYSQL_DB'] = os.getenv('MYSQL_DB')
 app.config['MYSQL_PORT'] = int(os.getenv('MYSQL_PORT'))
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
+app.config["MYSQL_CHARSET"] = "utf8mb4" #ALWAYS USE: Used to make files compatible when comparing to existing ones. (existingFile function)
 app.secret_key = os.getenv("SECRET_KEY") 
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 mysql = MySQL(app)
@@ -164,7 +165,9 @@ def existingEmail(email):
     return user
 
 def existingFile(file):
+    
     cursor = mysql.connection.cursor()
+    
     cursor.execute("SELECT * FROM advertisements WHERE file = %s", (file,))
     user = cursor.fetchone()
     cursor.close()
@@ -630,9 +633,7 @@ def uploadAdvertisement():
                 flash("Invalid file type, use the following file extensions: 'png', 'jpg', 'jpeg', 'mp4', 'mov', 'mkv' ", "danger")
                 return redirect(url_for("uploadAdvertisement"))
             
-            if existingFile(file):
-                flash("File already exists", "danger")
-                return redirect(url_for("uploadAdvertisement"))
+            
             
             
            
@@ -641,7 +642,11 @@ def uploadAdvertisement():
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
             file.save(filepath)
             uploadFilePath = os.path.join('uploads', file.filename)
-
+            
+            if existingFile(uploadFilePath):
+                flash("File already exists", "danger")
+                return redirect(url_for("uploadAdvertisement"))
+                
             #Insert file into database
             cursor = mysql.connection.cursor()
             caption = request.form.get('caption')

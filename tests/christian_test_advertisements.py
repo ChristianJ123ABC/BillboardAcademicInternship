@@ -64,7 +64,7 @@ def test_upload_advertisement_video(client):
         
     
     response = client.post("/uploadAdvertisement", data = {
-            "file": (resources / "a ghost pepper itself😃 [Ogc_pAgrZyM].mp4").open("rb"),
+            "file": (resources / "ghostpepper.mp4").open("rb"),
             "caption": "DELETEME"
 
 
