@@ -38,25 +38,6 @@ The URL contains the following values:
 
 ---
 
-## Step 1.1: Creating the database using forward engineering
-
-The database can be created from the ERD diagram using MySQL Workbench's Forward Engineer feature.
-
-Steps:
-
-1. Open the project ERD file in MySQL Workbench.
-2. Select:
-
-   Database → Forward Engineer
-
-3. Select the MySQL connection to use.
-4. Review the generated SQL script.
-5. Execute the generated SQL script.
-
-MySQL Workbench will create the database schema, tables, primary keys, foreign keys, and relationships based on the ERD design.
-
-
-
 ## Step 2: Importing the SQL script
 
 Once you have the database URL, use the values from it to create the import command.
@@ -165,3 +146,20 @@ If you encounter any issues with the project, contact:
 ```text
 x23524103@student.ncirl.ie
 ```
+
+## Optional ERD Step: Creating the database using forward engineering
+
+The database can be created from the ERD diagram in the submission using MySQL Workbench's Forward Engineer feature.
+
+Steps:
+
+1. Open the project ERD file in MySQL Workbench.
+2. Select:
+
+   Database → Forward Engineer
+
+3. Select the MySQL connection to use.
+4. Review the generated SQL script.
+5. Execute the generated SQL script.
+
+MySQL Workbench will create the database schema, tables, primary keys, foreign keys, and relationships based on the ERD design.
