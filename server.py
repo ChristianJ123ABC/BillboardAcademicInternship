@@ -973,63 +973,160 @@ def payment_success():
 
 # SCHEDULING ROUTE
 
-@app.route("/scheduling", methods = ["GET", "POST"])
+# SCHEDULING ROUTE
+@app.route("/scheduling", methods=["GET", "POST"])
 def scheduling():
-    if session["subscription_plan"] == "New":
-        flash("You are not subscribed to any plan. You must be subscribed to schedule an advertisement.", "danger")
-        return redirect(url_for("dashboard"))
-    
-    if request.method == "GET":
-        cursor = mysql.connection.cursor()
 
-        cursor.execute("""
-                    SELECT caption,
-                           advert_id
-                    FROM advertisements
-                    WHERE user_id=%s
-                """, (session["user_id"],))
+    #create database cursor
+    cursor = mysql.connection.cursor()
+
+    # Get the current user's subscription plan  
+    cursor.execute(
+        """
+        SELECT subscription_plan 
+        FROM users 
+        WHERE id=%s
+        """,
+        (session["user_id"],)
+    )
+
+    user = cursor.fetchone()
+
+    # prevent from scheduling advertisements if user have no active subscription
+    if not user or user["subscription_plan"] == "New":
+        cursor.close()
+        flash(
+            "You are not subscribed to any plan. You must be subscribed to schedule an advertisement.",
+            "danger"
+        )
+        return redirect(url_for("dashboard"))
+
+    # Store the subscription plan to send to the template
+    subscription_plan = user["subscription_plan"]
+
+
+    # Display the scheduling page and show the user's advertisements
+    if request.method == "GET":
+
+        cursor.execute(
+            """
+            SELECT caption, advert_id
+            FROM advertisements
+            WHERE user_id=%s
+            """,
+            (session["user_id"],)
+        )
 
         advertisements = cursor.fetchall()
 
-        cursor.execute("""SELECT subscription_plan FROM users WHERE id=%s""", (session["user_id"],))
-        subscription_plan = cursor.fetchone()["subscription_plan"]
-
         cursor.close()
-        return render_template("scheduling.html", advertisements = advertisements, subscription_plan = subscription_plan)
 
-    else:
-        if request.method == "POST":
-            # Insert schedule into database
-            advert_id = int(request.form.get('advert_id')) 
-            location = request.form.get('location')
-            time = request.form.get('time')
+        return render_template(
+            "scheduling.html",
+            advertisements=advertisements,
+            subscription_plan=subscription_plan
+        )
 
-            #Used so it would throw a flash message instead of an error page to the user.
-            date_start_string = request.form.get("date_start")
-            date_end_string = request.form.get("date_end")
 
-            if not date_start_string or not date_end_string:
-                flash("Make sure both dates are filled in before submitting.", "danger")
-                return redirect(url_for('scheduling'))
-            
-            if existingSchedule(advert_id):
-                flash("There is already a schedule for this advertisement. Please remove the current one before adding a new one.", "danger")
-                return redirect(url_for('scheduling'))
-            
-            
-                
-            
+    # Receive scheduling details from the form
 
-            date_start = datetime.strptime(date_start_string, "%Y-%m-%d").date()
-            date_end = datetime.strptime(date_end_string, "%Y-%m-%d").date()
+    advert_id = request.form.get("advert_id")
+    location = request.form.get("location")
+    time = request.form.get("time")
 
-            cursor = mysql.connection.cursor()
-            cursor.execute("INSERT INTO schedules (advert_id, location, time, date_start, date_end) VALUES (%s, %s, %s, %s, %s)",
-                           (advert_id, location, time, date_start, date_end ))
-            mysql.connection.commit()
-            cursor.close()
-            flash("Advertisement successfully scheduled!", "success")
-            return redirect(url_for('scheduling'))
+    date_start_string = request.form.get("date_start")
+    date_end_string = request.form.get("date_end")
+
+
+    # Check that all required fields are filled
+    if not advert_id or not location or not time:
+        cursor.close()
+        flash("Please fill in all required fields.", "danger")
+        return redirect(url_for("scheduling"))
+
+
+    # Check that both dates have been entered
+    if not date_start_string or not date_end_string:
+        cursor.close()
+        flash("Make sure both dates are filled in before submitting.", "danger")
+        return redirect(url_for("scheduling"))
+
+
+    # Convert advertisement ID from string to integer
+    advert_id = int(advert_id)
+
+
+    # Prevent from duplicate scheduling for the same advertisement
+    if existingSchedule(advert_id):
+        cursor.close()
+        flash(
+            "There is already a schedule for this advertisement. Please remove the current one before adding a new one.",
+            "danger"
+        )
+        return redirect(url_for("scheduling"))
+
+
+    # Convert date strings from HTML format into Python date objects
+    try:
+        date_start = datetime.strptime(
+            date_start_string,
+            "%Y-%m-%d"
+        ).date()
+
+        date_end = datetime.strptime(
+            date_end_string,
+            "%Y-%m-%d"
+        ).date()
+
+    except ValueError:
+        cursor.close()
+        flash("Invalid date format.", "danger")
+        return redirect(url_for("scheduling"))
+
+
+    # Make sure the end date is not before the start date
+    if date_end < date_start:
+        cursor.close()
+        flash("End date cannot be before start date.", "danger")
+        return redirect(url_for("scheduling"))
+
+
+    # Insert the advertisement schedule into the database
+    cursor.execute(
+        """
+        INSERT INTO schedules
+        (
+            advert_id,
+            location,
+            time,
+            date_start,
+            date_end
+        )
+        VALUES (%s, %s, %s, %s, %s)
+        """,
+        (
+            advert_id,
+            location,
+            time,
+            date_start,
+            date_end
+        )
+    )
+
+
+    # Save changes to the database
+    mysql.connection.commit()
+
+    cursor.close()
+
+
+    # Notify user that scheduling was successful
+    flash(
+        "Advertisement successfully scheduled!",
+        "success"
+    )
+
+    return redirect(url_for("scheduling"))
 
 #END: Code created by Prakash
 
