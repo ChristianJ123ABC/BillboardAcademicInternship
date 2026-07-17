@@ -731,7 +731,7 @@ def deleteFile(id):
 @app.route('/removeSchedule/<int:id>')
 def removeSchedule(id):        
     cursor = mysql.connection.cursor()
-    cursor.execute("SELECT id FROM schedules WHERE advert_id = %s", (id,))
+    cursor.execute("SELECT file FROM schedules WHERE advert_id = %s AND user_id = %s", (id,))
     scheduledAdFile = cursor.fetchone()
 
     if not scheduledAdFile:
