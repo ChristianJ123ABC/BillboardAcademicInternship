@@ -846,11 +846,16 @@ def create_checkout_session(plan):
 
         mode="payment",
 
+        #save the plan in stripe
+         metadata={
+            "plan": plan,
+            "user_id": str(session["user_id"])
+        },
+
         success_url=url_for(
             "payment_success",
-            plan=plan,
             _external=True
-        ),
+        ) + "?session_id={CHECKOUT_SESSION_ID}",
 
         cancel_url=url_for(
             "subscription",
@@ -868,12 +873,33 @@ def create_checkout_session(plan):
 
 
 # Payment success route
-@app.route("/payment-success/<plan>")
-def payment_success(plan):
+@app.route("/payment-success")
+def payment_success():
 
     # Check if user is logged in
     if "user_id" not in session:
         return redirect(url_for("login"))
+    
+    session_id = request.args.get("session_id")
+
+    if not session_id:
+        flash("Invalid payment request.", "danger")
+        return redirect(url_for("subscription"))
+
+    try:
+        checkout_session = stripe.checkout.Session.retrieve(session_id)
+
+    except Exception:
+        flash("Unable to verify payment.", "danger")
+        return redirect(url_for("subscription"))
+
+    # Verify payment was successful
+    if checkout_session.payment_status != "paid":
+        flash("Payment was not completed.", "danger")
+        return redirect(url_for("subscription"))
+
+    # Read the purchased plan from Stripe
+    plan = checkout_session.metadata["plan"]
 
     # Subscription expires in 30 days
     expiry = datetime.now() + timedelta(days=30)
