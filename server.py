@@ -29,7 +29,11 @@
 
 #Error Handling
 #https://flask.palletsprojects.com/en/stable/errorhandling/
+#https://pypi.org/project/Flask-Limiter/
+#https://flask-limiter.readthedocs.io/en/stable/configuration.html
 
+#Rate Limiting:
+#https://flask-limiter.readthedocs.io/en/stable/
 
 #FUTURE NOTES: DOCKER ISSUES
 #PUT THIS SECTION IN THE DOCKERFILE TO ALLOW THE USER TO UPLOAD FILES VIA DOCKER
@@ -82,6 +86,10 @@ import re
 from io import BytesIO
 from io import BytesIO
 import string, random
+
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
 from dotenv import load_dotenv #pip install python-dotenv #used to load from .env file for security reasons (NEW THING I LEARNED)
 load_dotenv(override=True)
 
@@ -118,6 +126,9 @@ app.secret_key = os.getenv("SECRET_KEY")
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 mysql = MySQL(app)
 
+app.config["RATELIMIT_ENABLED"] = True  #FOR TESTING PURPOSES, MAKE SURE TO REMOVE THIS TEMPORARILY TO ENSURE NO FALSE NEGATIVES
+rateLimiter = Limiter(get_remote_address, app=app, storage_uri = "memory://") #Creates a rate limit for logins, registers, etc
+
 #Used to create 2FA secret key
 f = Fernet(os.getenv("TOTP_ENCRYPTION_KEY").encode())
 
@@ -126,18 +137,23 @@ f = Fernet(os.getenv("TOTP_ENCRYPTION_KEY").encode())
 #User trys to access a page that does not exist
 @app.errorhandler(werkzeug.exceptions.NotFound)
 def handle_notfound_request(e):
-    return 'Page not found! Please try a new page', 404
+    return '404 Page not found! Please try a new page', 404
 
 #User trys to upload a too large file
 @app.errorhandler(werkzeug.exceptions.RequestEntityTooLarge)
 def handle_file_too_large(e):
-    flash("File is too large", "danger")
+    flash("413 RequestEntityTooLarge: File is too large", "danger")
     return redirect(url_for("uploadAdvertisement")), 413
 
 #Overall check incase something errors in the server
 @app.errorhandler(werkzeug.exceptions.InternalServerError)
 def handle_server_error(e):
-   return "Conflict has occurred, please try again.", 500
+   return "500 Internal Server Error: Conflict has occurred, please try again.", 500
+
+#If a user tries to exceed the rate limit
+@app.errorhandler(werkzeug.exceptions.TooManyRequests)
+def handle_rate_limit(e):
+    return "429 Too Many Requests: Too many attempts. Please wait a moment and try again.", 429
   
 
 #Encryption + Decryption Functions
@@ -194,6 +210,7 @@ def home():
 
 #Register
 @app.route("/register", methods=["GET","POST"])
+@rateLimiter.limit("10 per minute")
 def register():
 
     #Message if user tries to create account whilst logged in
@@ -262,6 +279,7 @@ def register():
 
 #Login
 @app.route("/login", methods = ["GET", "POST"])
+@rateLimiter.limit("10 per minute")
 def login():
     #Message if user tries to login again if they are already logged in
     if "user_id" in session:
@@ -315,7 +333,9 @@ def login():
             return redirect(url_for("dashboard"))
         
 #2FA Section (Login, Verification/Setup, Enable/Disable)
+
 @app.route("/login/2fa", methods = ["GET", "POST"])
+@rateLimiter.limit("10 per minute")
 def login_2fa():
 
     #Checks for user if they tried to login with 2FA
@@ -382,6 +402,7 @@ def setup2FA():
     return render_template("2fa_setup.html", qr_code=qr_b64)
 
 @app.route("/setup2FA/verify", methods=["GET","POST"])
+@rateLimiter.limit("10 per minute")
 def verify_2fa():
     if "user_id" not in session:
         return redirect(url_for("login"))
@@ -409,6 +430,7 @@ def disable2FA():
     return render_template("2fa_disable.html")
 
 @app.route("/disable2FA/deactivate", methods = ["POST"])
+@rateLimiter.limit("10 per minute")
 def deactivate2FA():
     if "user_id" not in session:
         return redirect(url_for("login"))
@@ -470,7 +492,7 @@ def dashboard():
         for advertisement in advertisements:
             cursor.execute("SELECT advert_id, location, time, date_start, date_end FROM schedules WHERE advert_id = %s", (advertisement["advert_id"],))
             statistics[advertisement["advert_id"]] = cursor.fetchone()
-
+#END: Code created by Christian
 
         #Start code : Prakash
         # Get user subscription information
@@ -535,6 +557,10 @@ def dashboard():
             now=date.today()
         )
         #End code: Prakash 
+
+
+
+
 
 
 
@@ -628,6 +654,8 @@ def uploadAdvertisement():
                 #
                 #
 
+
+ #START: Code created by Christian
             file = request.files['file']
              #No file selected
             if not file or file.filename == ' ':
@@ -662,7 +690,8 @@ def uploadAdvertisement():
             
             flash("File uploaded successfully", 'success')
             return redirect(url_for('uploadAdvertisement'))
-    
+            
+            
 #Used to remove a user's advertisement if they so please
 @app.route('/deleteFile/<int:id>')
 def deleteFile(id):
