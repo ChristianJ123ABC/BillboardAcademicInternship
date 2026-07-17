@@ -194,7 +194,7 @@ def test_password_length_too_short(client):
 #Used to wipe the testing details from the database
 @pytest.fixture(scope="session", autouse=True)
 def wipe_db():
-    yield #Executes the function
+    yield #Executes the function after all the tests are done
     database = MySQLdb.connect(
         host=os.getenv("MYSQL_HOST"),
         user=os.getenv("MYSQL_USER"),

@@ -29,7 +29,11 @@
 
 #Error Handling
 #https://flask.palletsprojects.com/en/stable/errorhandling/
+#https://pypi.org/project/Flask-Limiter/
+#https://flask-limiter.readthedocs.io/en/stable/configuration.html
 
+#Rate Limiting:
+#https://flask-limiter.readthedocs.io/en/stable/
 
 #FUTURE NOTES: DOCKER ISSUES
 #PUT THIS SECTION IN THE DOCKERFILE TO ALLOW THE USER TO UPLOAD FILES VIA DOCKER
@@ -82,6 +86,10 @@ import re
 from io import BytesIO
 from io import BytesIO
 import string, random
+
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
 from dotenv import load_dotenv #pip install python-dotenv #used to load from .env file for security reasons (NEW THING I LEARNED)
 load_dotenv(override=True)
 
@@ -113,9 +121,13 @@ app.config['MYSQL_PASSWORD'] = os.getenv('MYSQL_PASSWORD')
 app.config['MYSQL_DB'] = os.getenv('MYSQL_DB')
 app.config['MYSQL_PORT'] = int(os.getenv('MYSQL_PORT'))
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
+app.config["MYSQL_CHARSET"] = os.getenv("MYSQL_CHARSET") #ALWAYS USE: Used to make files compatible when comparing to existing ones. (existingFile function)
 app.secret_key = os.getenv("SECRET_KEY") 
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 mysql = MySQL(app)
+
+app.config["RATELIMIT_ENABLED"] = True  #FOR TESTING PURPOSES, MAKE SURE TO REMOVE THIS TEMPORARILY TO ENSURE NO FALSE NEGATIVES
+rateLimiter = Limiter(get_remote_address, app=app, storage_uri = "memory://") #Creates a rate limit for logins, registers, etc
 
 #Used to create 2FA secret key
 f = Fernet(os.getenv("TOTP_ENCRYPTION_KEY").encode())
@@ -125,18 +137,23 @@ f = Fernet(os.getenv("TOTP_ENCRYPTION_KEY").encode())
 #User trys to access a page that does not exist
 @app.errorhandler(werkzeug.exceptions.NotFound)
 def handle_notfound_request(e):
-    return 'Page not found! Please try a new page', 404
+    return '404 Page not found! Please try a new page', 404
 
 #User trys to upload a too large file
 @app.errorhandler(werkzeug.exceptions.RequestEntityTooLarge)
 def handle_file_too_large(e):
-    flash("File is too large", "danger")
+    flash("413 RequestEntityTooLarge: File is too large", "danger")
     return redirect(url_for("uploadAdvertisement")), 413
 
 #Overall check incase something errors in the server
 @app.errorhandler(werkzeug.exceptions.InternalServerError)
 def handle_server_error(e):
-   return "Conflict has occurred, please try again.", 500
+   return "500 Internal Server Error: Conflict has occurred, please try again.", 500
+
+#If a user tries to exceed the rate limit
+@app.errorhandler(werkzeug.exceptions.TooManyRequests)
+def handle_rate_limit(e):
+    return "429 Too Many Requests: Too many attempts. Please wait a moment and try again.", 429
   
 
 #Encryption + Decryption Functions
@@ -164,7 +181,9 @@ def existingEmail(email):
     return user
 
 def existingFile(file):
+    
     cursor = mysql.connection.cursor()
+    
     cursor.execute("SELECT * FROM advertisements WHERE file = %s", (file,))
     user = cursor.fetchone()
     cursor.close()
@@ -191,6 +210,7 @@ def home():
 
 #Register
 @app.route("/register", methods=["GET","POST"])
+@rateLimiter.limit("10 per minute")
 def register():
 
     #Message if user tries to create account whilst logged in
@@ -209,7 +229,7 @@ def register():
         password = request.form["password"]
         businessName = request.form["businessName"]
         hashedPass = generate_password_hash(password)
-
+        subscription_plan = "New"
         #Validation checks for email
         if not validEmail(email):
             flash("Invalid Email Format, use the following (email@domain.com / name.last@domain.co.uk)", "danger")
@@ -249,7 +269,7 @@ def register():
 
         else:
             cursor = mysql.connection.cursor()
-            cursor.execute("INSERT into users (email, hashed_password, firstName, lastName, businessName, 2fa_enabled) VALUES (%s, %s, %s, %s, %s,%s)", (email, hashedPass, firstName, lastName, businessName, 0)) #The 0 is used to set the 2FA to disabled on a new account
+            cursor.execute("INSERT into users (email, hashed_password, firstName, lastName, businessName, 2fa_enabled, subscription_plan) VALUES (%s, %s, %s, %s, %s,%s,%s)", (email, hashedPass, firstName, lastName, businessName, 0, subscription_plan)) #The 0 is used to set the 2FA to disabled on a new account
             mysql.connection.commit()
 
             flash(("Account Created Successfully!"), "success")
@@ -259,6 +279,7 @@ def register():
 
 #Login
 @app.route("/login", methods = ["GET", "POST"])
+@rateLimiter.limit("10 per minute")
 def login():
     #Message if user tries to login again if they are already logged in
     if "user_id" in session:
@@ -306,12 +327,15 @@ def login():
             session["lastName"] = user["lastName"]
             session["businessName"]  = user["businessName"]
             session["email"] = user["email"]
+            session["subscription_plan"] = user["subscription_plan"]
             
             flash("Login Successful!", "success")
             return redirect(url_for("dashboard"))
         
 #2FA Section (Login, Verification/Setup, Enable/Disable)
+
 @app.route("/login/2fa", methods = ["GET", "POST"])
+@rateLimiter.limit("10 per minute")
 def login_2fa():
 
     #Checks for user if they tried to login with 2FA
@@ -333,6 +357,7 @@ def login_2fa():
             session["lastName"] = session.pop("pending_lastName")
             session["businessName"] = session.pop("pending_businessName")
             session["email"] = session.pop("pending_email")
+            session["subscription_plan"] = user["subscription_plan"]
             flash("Login Successful!", "success")
             return redirect(url_for("dashboard"))
         
@@ -377,6 +402,7 @@ def setup2FA():
     return render_template("2fa_setup.html", qr_code=qr_b64)
 
 @app.route("/setup2FA/verify", methods=["GET","POST"])
+@rateLimiter.limit("10 per minute")
 def verify_2fa():
     if "user_id" not in session:
         return redirect(url_for("login"))
@@ -404,6 +430,7 @@ def disable2FA():
     return render_template("2fa_disable.html")
 
 @app.route("/disable2FA/deactivate", methods = ["POST"])
+@rateLimiter.limit("10 per minute")
 def deactivate2FA():
     if "user_id" not in session:
         return redirect(url_for("login"))
@@ -465,7 +492,7 @@ def dashboard():
         for advertisement in advertisements:
             cursor.execute("SELECT advert_id, location, time, date_start, date_end FROM schedules WHERE advert_id = %s", (advertisement["advert_id"],))
             statistics[advertisement["advert_id"]] = cursor.fetchone()
-
+#END: Code created by Christian
 
         #Start code : Prakash
         # Get user subscription information
@@ -533,13 +560,20 @@ def dashboard():
 
 
 
+
+
+
+
 #Page for users to display their advertisments
 @app.route("/uploadAdvertisement", methods = ["GET", "POST"])
 def uploadAdvertisement():
-
+    if session["subscription_plan"] == "New":
+        flash("You are not subscribed to any plan. You must be subscribed to upload an advertisement. ", "danger")
+        return redirect(url_for("dashboard"))
     
     if request.method == "GET":
         return render_template("uploadAdvertisement.html")
+    
 
     #Validation for files
     else:
@@ -605,7 +639,7 @@ def uploadAdvertisement():
             uploadLimit = limits.get(currentPlan, 0)
 
             #Prevent uploads if limit reached
-            if uploadsUsed >= uploadLimit:
+            if uploadsUsed > uploadLimit:
 
 
                 flash(
@@ -620,19 +654,19 @@ def uploadAdvertisement():
                 #
                 #
 
+
+ #START: Code created by Christian
             file = request.files['file']
              #No file selected
-            if not file or file.filename == '':
+            if not file or file.filename == ' ':
                 flash("No file selected", "danger")
                 return redirect(url_for("uploadAdvertisement"))
             
             if not allowedFile(file.filename):
-                flash("Invalid image type, use the following image extensions: 'png', 'jpg', 'jpeg', 'mp4', 'mov', 'mkv' ", "danger")
+                flash("Invalid file type, use the following file extensions: png, jpg, jpeg, mp4, mov, mkv", "danger")
                 return redirect(url_for("uploadAdvertisement"))
             
-            if existingFile(file):
-                flash("File already exists", "danger")
-                return redirect(url_for("uploadAdvertisement"))
+            
             
             
            
@@ -641,8 +675,12 @@ def uploadAdvertisement():
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
             file.save(filepath)
             uploadFilePath = os.path.join('uploads', file.filename)
-
-            #Insert image into database
+            
+            if existingFile(uploadFilePath):
+                flash("File already exists", "danger")
+                return redirect(url_for("uploadAdvertisement"))
+                
+            #Insert file into database
             cursor = mysql.connection.cursor()
             caption = request.form.get('caption')
             views = randrange(2, 99)
@@ -650,16 +688,17 @@ def uploadAdvertisement():
             mysql.connection.commit()
             cursor.close()
             
-            flash("Image uploaded successfully", 'success')
+            flash("File uploaded successfully", 'success')
             return redirect(url_for('uploadAdvertisement'))
-    
+            
+            
 #Used to remove a user's advertisement if they so please
 @app.route('/deleteFile/<int:id>')
 def deleteFile(id):
     root = os.path.dirname(os.path.abspath(__file__))
         
     cursor = mysql.connection.cursor()
-    cursor.execute("SELECT file FROM advertisements WHERE advert_id = %s", (id,))
+    cursor.execute("SELECT file FROM advertisements WHERE advert_id = %s AND user_id = %s", (id,session["user_id"]))
     adFile = cursor.fetchone()
 
     if not adFile:
@@ -692,7 +731,7 @@ def deleteFile(id):
 @app.route('/removeSchedule/<int:id>')
 def removeSchedule(id):        
     cursor = mysql.connection.cursor()
-    cursor.execute("SELECT id FROM schedules WHERE advert_id = %s", (id,))
+    cursor.execute("SELECT file FROM schedules WHERE advert_id = %s AND user_id = %s", (id,))
     scheduledAdFile = cursor.fetchone()
 
     if not scheduledAdFile:
@@ -936,7 +975,10 @@ def payment_success():
 
 @app.route("/scheduling", methods = ["GET", "POST"])
 def scheduling():
-
+    if session["subscription_plan"] == "New":
+        flash("You are not subscribed to any plan. You must be subscribed to schedule an advertisement.", "danger")
+        return redirect(url_for("dashboard"))
+    
     if request.method == "GET":
         cursor = mysql.connection.cursor()
 
