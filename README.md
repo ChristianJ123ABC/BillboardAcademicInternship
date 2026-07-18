@@ -84,7 +84,11 @@ After installing the software, open Visual Studio Code and install these extensi
 - Docker
 - Python
 
-Next, clone this GitHub repository.
+Next, clone this GitHub repository by doing the following:
+ 1. Open GitHub Desktop and click File --> Clone Repository
+ 2. Click URL and copy this link into the URL form: https://github.com/ChristianJ123ABC/BillboardAcademicInternship
+ 3. Choose the location where you want to store the Repository
+ 4. Click Clone once selected
 
 Open the repository folder in Visual Studio Code:
 
