@@ -178,11 +178,13 @@ def wipe_db():
 
     resources = Path(__file__).parent.parent / "tests" / "resources" 
     backupResources = Path(__file__).parent.parent / "tests" / "backupresources" 
-
+    uploads = Path(__file__).parent.parent / "static" / "uploads" 
     #Used to copy the resources back in when they are deleted
     for file in backupResources.iterdir():
         destination = resources / file.name
+        destination2 = uploads / file.name
         shutil.copy2(file,destination)
+        shutil.copy2(file,destination2)
 
     database = MySQLdb.connect(
         host=os.getenv("MYSQL_HOST"),
@@ -195,7 +197,7 @@ def wipe_db():
     name = "DELETEME"
     cursor = database.cursor()
     cursor.execute("DELETE FROM advertisements WHERE caption = %s", (name,))
-    cursor.execute("INSERT INTO advertisements (advert_id, file, caption, user_id, views) VALUES (%s,%s, %s, %s, %s)", (9999,"tests/resources/gp.mp4", "hi", 1, 33))
+    cursor.execute("INSERT INTO advertisements (advert_id, file, caption, user_id, views) VALUES (%s,%s, %s, %s, %s)", (9999,r"uploads\gp.mp4", "hi", 1, 33))
     cursor.connection.commit()
 
     cursor.close() 
