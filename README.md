@@ -71,13 +71,13 @@ Install the following software:
 - Visual Studio Code  
   https://code.visualstudio.com/download
 
-- Docker Desktop  
+- Docker Desktop  (You don't need an account) (If linux pops up to be installed, follow the instructions)
   https://www.docker.com/products/docker-desktop/
 
 - GitHub Desktop  
   https://desktop.github.com/download/
 
-After installing the software, open Visual Studio Code and install these extensions:
+After installing the software, open Visual Studio Code and press CTRL+SHIFT+X, and search + install these extensions:
 
 - Dev Containers
 - Container Tools
@@ -138,19 +138,24 @@ Once all values have been configured:
 ```bash
 docker compose up --build
 ```
-
+4. Go to Docker Desktop --> Containers and you should see a start button. Click this and open the "Running on http://127.0.0.1:5000" link.
+   
 This will build the Docker container and allow the website to run.
 
 ---
 
 ## Issues
+A common issue when running the docker build, will be that it won't be able to find the .env file. If this is the case, make sure the .env file is actually named '.env', instead of just 'env'. If done correctly, the file will actually turn a dark gray in the explorer section like this:
+
+
+<img width="168" height="302" alt="image" src="https://github.com/user-attachments/assets/8160694c-29ec-44fd-b843-1d6171dc306e" />
+
 
 If you encounter any issues with the project, contact:
 
 ```text
 x23524103@student.ncirl.ie
 ```
-
 ## Optional ERD Step: Creating the database using forward engineering
 
 The database can be created from the ERD diagram in the submission using MySQL Workbench's Forward Engineer feature.
