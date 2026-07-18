@@ -161,14 +161,15 @@ x23524103@student.ncirl.ie
 The database can be created from the ERD diagram in the submission using MySQL Workbench's Forward Engineer feature.
 
 Steps:
-
-1. Open the project ERD file in MySQL Workbench.
-2. Select:
+1. Install MySQL Workbench 8.0 CE: https://dev.mysql.com/downloads/workbench/. Make sure to do a complete setup and to setup a new connection / database.
+2. Open the project ERD file in MySQL Workbench.
+3. Select:
 
    Database → Forward Engineer
 
-3. Select the MySQL connection to use.
-4. Review the generated SQL script.
-5. Execute the generated SQL script.
+4. Select the MySQL connection to use.
+5. Review the generated SQL script.
+6. Execute the generated SQL script.
+7. Connect to a database / new connection and refresh schemas to see the database created (Railway)
 
 MySQL Workbench will create the database schema, tables, primary keys, foreign keys, and relationships based on the ERD design.
