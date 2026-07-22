@@ -54,7 +54,7 @@ def test_check_user_password_is_hashed(client):
 
 #NFR1-2
 def test_secret_key_length(client):
-    secret_key = os.getenv("SECRET_KEY") 
+    secret_key = os.getenv("SECRET_KEY") #Should be a base64 key that is 32 bytes or greater
     decodedKey = base64.b64decode(secret_key)
     assert len(decodedKey) >= 32 #A good secret key is base 64 and when decoded it is greater than 32 bytes.
 
