@@ -126,7 +126,7 @@ app.secret_key = os.getenv("SECRET_KEY")
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 mysql = MySQL(app)
 
-app.config["RATELIMIT_ENABLED"] = False #FOR TESTING PURPOSES, MAKE SURE TO TURN THIS TO FALSE TEMPORARILY TO ENSURE NO FALSE NEGATIVES
+app.config["RATELIMIT_ENABLED"] = False #FOR TESTING PURPOSES, MAKE SURE TO TURN THIS TO FALSE TEMPORARILY TO ENSURE NO FALSE NEGATIVES (EXCEPT FOR PERFORMANCE TEST)
 rateLimiter = Limiter(get_remote_address, app=app, storage_uri = "memory://") #Creates a rate limit for logins, registers, etc
 
 #Used to create 2FA secret key
