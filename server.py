@@ -661,8 +661,6 @@ def uploadAdvertisement():
             #Check if subscription has expired
             if user["subscription_expiry"] is not None:
 
-                from datetime import datetime
-
                 if user["subscription_expiry"] < datetime.now():
 
                     flash("Your subscription has expired. Please renew your plan.", "danger")
