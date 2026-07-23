@@ -51,7 +51,7 @@ def client(app):
 # Logged-in user opens subscription page.
 # System displays available plans.
 
-def test_view_subscription_page(client):
+def test_access_subscription_page(client):
 
 
     with client.session_transaction() as session:
@@ -66,31 +66,24 @@ def test_view_subscription_page(client):
 
 
     assert response.status_code == 200
+    assert response.request.path == "/subscription"
 
 
 # UC5-2
 # User selects subscription plan.
 # System redirects to Stripe checkout.
 
-def test_select_subscription_plan(client):
-
+def test_choose_subscription_plan(client):
 
     with client.session_transaction() as session:
-
         session["user_id"] = 1
 
-
-
-    response = client.post(
-        "/subscription",
-        data={
-            "plan":"Basic"
-        },
+    response = client.get(
+        "/create-checkout-session/Basic",
         follow_redirects=False
     )
 
-
-    assert response.status_code in [200,302]
+    assert response.status_code == 303
 
 
 
@@ -116,46 +109,41 @@ def test_cancel_payment(client):
 
 
     assert response.status_code == 200
+    assert response.request.path == "/subscription"
 
 
 
 # EXCEPTION FLOW
 
+
 # UC5-4
-# Payment fails.
-# System should not activate subscription.
+# User selects an invalid subscription plan.
+# System displays an error.
 
-def test_payment_failure(client):
-
+def test_invalid_subscription_plan(client):
 
     with client.session_transaction() as session:
-
         session["user_id"] = 1
 
-
-
-    response = client.post(
-        "/subscription",
-        data={
-            "payment":"failed"
-        },
+    response = client.get(
+        "/choose-plan/Gold",
         follow_redirects=True
     )
 
+    assert response.status_code == 200
+    assert b"Invalid subscription plan" in response.data
 
-    assert response.status_code in [200,302]
 
 
 # UC5-5
-# User not logged in.
+# User is not logged in.
+# System redirects user to login page.
 
 def test_subscription_without_login(client):
 
-
     response = client.get(
         "/subscription",
-        follow_redirects=True
+        follow_redirects=False
     )
 
-
-    assert response.status_code in [200,302]
+    assert response.status_code == 302
