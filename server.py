@@ -567,9 +567,71 @@ def dashboard():
 #Page for users to display their advertisments
 @app.route("/uploadAdvertisement", methods = ["GET", "POST"])
 def uploadAdvertisement():
-    if session["subscription_plan"] == "New":
-        flash("You are not subscribed to any plan. You must be subscribed to upload an advertisement. ", "danger")
-        return redirect(url_for("dashboard"))
+
+
+    #validation
+    # Check if user is logged in
+    if "user_id" not in session:
+        flash("Please login before uploading an advertisement.", "danger")
+        return redirect(url_for("login"))
+
+
+    user_id = session["user_id"]
+
+
+    # Check subscription information from database
+    cursor = mysql.connection.cursor()
+
+    cursor.execute("""
+        SELECT subscription_plan,
+               uploads_used,
+               subscription_expiry
+        FROM users
+        WHERE id=%s
+    """, (user_id,))
+
+
+    user = cursor.fetchone()
+
+
+    # subscription information not found
+    if not user:
+        cursor.close()
+        flash("Subscription information cannot be found.", "danger")
+        return redirect(url_for("subscription"))
+
+
+    # check User has no active subscription
+    if user["subscription_plan"] == "New":
+
+        cursor.close()
+
+        flash(
+            "You are not subscribed to any plan. You must be subscribed to upload an advertisement.",
+            "danger"
+        )
+
+        return redirect(url_for("subscription"))
+
+
+    # Check subscription expiry date
+
+    if user["subscription_expiry"] is not None:
+
+        if user["subscription_expiry"] < datetime.now():
+
+            cursor.close()
+
+            flash(
+                "Your subscription has expired. Please renew your plan.",
+                "danger"
+            )
+
+            return redirect(url_for("subscription"))
+
+
+
+    cursor.close()
     
     if request.method == "GET":
         return render_template("uploadAdvertisement.html")
@@ -977,29 +1039,79 @@ def payment_success():
 @app.route("/scheduling", methods=["GET", "POST"])
 def scheduling():
 
-    #create database cursor
+  
+    # Check login
+    if "user_id" not in session:
+
+        flash(
+            "Please login before scheduling an advertisement.",
+            "danger"
+        )
+
+        return redirect(url_for("login"))
+
+
+
     cursor = mysql.connection.cursor()
 
-    # Get the current user's subscription plan  
+
+    # Get subscription details
     cursor.execute(
         """
-        SELECT subscription_plan 
-        FROM users 
+        SELECT subscription_plan,
+               subscription_expiry
+        FROM users
         WHERE id=%s
         """,
         (session["user_id"],)
     )
 
+
     user = cursor.fetchone()
 
-    # prevent from scheduling advertisements if user have no active subscription
-    if not user or user["subscription_plan"] == "New":
+
+
+    # check Subscription missing
+    if not user:
+
         cursor.close()
+
+        flash(
+            "Subscription information cannot be found.",
+            "danger"
+        )
+
+        return redirect(url_for("subscription"))
+
+
+
+    # No active subscription
+    if user["subscription_plan"] == "New":
+
+        cursor.close()
+
         flash(
             "You are not subscribed to any plan. You must be subscribed to schedule an advertisement.",
             "danger"
         )
-        return redirect(url_for("dashboard"))
+
+        return redirect(url_for("subscription"))
+
+
+
+    # check if Expired subscription
+    if user["subscription_expiry"] is not None:
+
+        if user["subscription_expiry"] < datetime.now():
+
+            cursor.close()
+
+            flash(
+                "Your subscription has expired. Please renew your plan.",
+                "danger"
+            )
+
+            return redirect(url_for("subscription"))
 
     # Store the subscription plan to send to the template
     subscription_plan = user["subscription_plan"]
