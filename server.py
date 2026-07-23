@@ -816,7 +816,7 @@ def removeSchedule(id):
 
 # SUBSCRIPTION
 
-@app.route("/subscription")
+@app.route("/subscription", methods=["GET","POST"])
 def subscription():
 
     if "user_id" not in session:

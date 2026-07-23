@@ -1,4 +1,5 @@
 # Verify Subscription Tests
+# Use Case: UC6 - VERIFY SUBSCRIPTION
 
 
 # Purpose:
